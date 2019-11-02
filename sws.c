@@ -2,33 +2,57 @@
 
 int
 main(int argc, char* argv[]) {
-	int opt = 0;
-
-	while((opt = getopt(argc, argv,"ialp")) != -1) {  
+	while((opt = getopt(argc, argv,"cdhilp")) != -1) {  
         	switch(opt) {
-			case 'a':
+			case 'c':
 				break;
+			case 'd':
+				break;
+			case 'h':
+				break;
+			case 'i':
+				break;
+			case 'l':
+				break;
+			case 'p':
+				break;	
 			default:
 				break;
 		}
 	}
 
-	CURL *curl;
-	CURLcode res;
-
-	curl = curl_easy_init();
-	
-	if(!curl) {
-		perror("CURL Init failed");
+	if (argc != 3) {
+		perror("usage: a.out <hostname> <portnumber>");
 		exit(1);
-	} else {
-		curl_easy_setopt(curl, CURLOPT_URL, "https://www.yahoo.com");
-		curl_easy_-setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-		res = curl_easy_perform(curl);
-		printf("%d\n", atoi(curl));
-		curl_easy_cleanup(curl);
-		curl = NULL;
 	}
+
+	port = atoi(argv[2]);
+	if ((port < 1) || (port > 65536)) {
+		fprintf(stderr, "Invalid port: %s\n", argv[2]);
+		exit(1);
+	}
+
+	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		perror("opening stream socket");
+		exit(1);
+	}
+
+	server.sin_family = AF_INET;
+	if ((hp = gethostbyname(argv[1])) == NULL) {
+		fprintf(stderr, "%s: unknown host\n", argv[1]);
+		exit(2);
+	}
+
+	bcopy(hp->h_addr, &server.sin_addr, hp->h_length);
+	server.sin_port = htons(port);
+	if (connect(sock, (struct sockaddr *)&server, sizeof(server)) < 0) {
+		perror("connecting stream socket");
+		exit(1);
+	}
+
+	if (write(sock, DATA, sizeof(DATA)) < 0)
+		perror("writing on stream socket");
+	close(sock);
 
 	return 0;
 }
