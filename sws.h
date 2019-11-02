@@ -1,3 +1,4 @@
+#include <curl/curl.h>
 #include <sys/types.h>
 
 #include <ctype.h>
