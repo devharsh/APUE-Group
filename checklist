@@ -2,12 +2,9 @@ For each assignment, copy this file into your homework
 submission directory and answer all questions.
 
 Did I write all the code myself?
-   - Yes. (checked various blogs for size limit (ideal size) of buffers 
-		and return types for errors) 
 
 
 Does my code follow the style guide?
-   - Yes.
 
 
 Does my code compile without warnings or errors on a
@@ -26,20 +23,13 @@ issues I encountered?
 
 
 Did I check the return value of all function calls?
-  - Yes, that does include malloc(3).
-
 
 Did I send error messages to stderr?
-	- used perror
 
 Did I use only meaningful and necessary comments?
-  - provided when necessary
-
 
 Does my program return zero on success, non-zero otherwise?
-- yes, returns 0 on success
 
 Did I make sure that my .h files only include function
 forward declarations, macros, etc., no function
 implementations or other code?
-- Yes
