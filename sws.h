@@ -12,6 +12,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#define DATA "Half a league, half a league..."
+
 int opt = 0;
 int sock, port;
 

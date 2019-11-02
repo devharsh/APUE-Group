@@ -17,20 +17,20 @@ open_connection(char *address, int port) {
 	sock = socket(AF_INET, SOCK_STREAM, 0);
 
 	if (sock < 0) {
-		fprintf(stderr, "Could not open socket \n", strerror(errno));
+		fprintf(stderr, "Could not open socket %s\n", strerror(errno));
 		return 1;
 	}
 	
     server = create_server_properties(server, address, port);
 	if (bind(sock, (struct sockaddr *)&server, sizeof(server)) != 0) {
-        fprintf(stderr, "Binding to socket failed \n", strerror(errno));
+        fprintf(stderr, "Binding to socket failed %s\n", strerror(errno));
 		return 1;
 	}
 
 	/* Find out assigned port number and print it out */
 	length = sizeof(server);
 	if (getsockname(sock, (struct sockaddr *)&server, &length) != 0) {
-		fprintf(stderr, "Error in getting socket name \n", strerror(errno));
+		fprintf(stderr, "Error in getting socket name %s\n", strerror(errno));
 		return 1;
 	}
 	fprintf(stdout, "Socket port #%d\n", ntohs(server.sin_port));
@@ -49,7 +49,7 @@ open_connection(char *address, int port) {
 			if (rval == 0)
 				printf("\nEnding connection\n");
 			else {
-				// printf("Client (%s) sent: %s", inet_ntoa(client.sin_addr), buf);
+				/* printf("Client (%s) sent: %s", inet_ntoa(client.sin_addr), buf); */
 				printf("Client (%s) ", inet_ntoa(client.sin_addr));
 				printf("sent: %s", buf);
 
