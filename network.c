@@ -29,7 +29,7 @@ open_connection(char *address, int port) {
 		return 1;
 	}
 	
-    server = create_server_properties(server, address, port);
+    server = create_server_properties(address, port);
 	if (bind(sock, (struct sockaddr *)&server, sizeof(server)) != 0) {
         fprintf(stderr, "Binding to socket failed: %s \n", strerror(errno));
 		return 1;
@@ -97,7 +97,8 @@ open_connection(char *address, int port) {
  * 
  **/
 struct sockaddr_in 
-create_server_properties(struct sockaddr_in server, char *address, int port) {
+create_server_properties(char *address, int port) {
+	struct sockaddr_in server;
     server.sin_family = AF_INET;
     
     if (address == NULL) {

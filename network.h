@@ -17,5 +17,5 @@
 
 int msgsock;
 
-struct sockaddr_in create_server_properties(struct sockaddr_in server, char *address, int port);
+struct sockaddr_in create_server_properties(char *address, int port);
 int  open_connection(char *address, int port);
