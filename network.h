@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <signal.h>
+#include <stdbool.h>
 
 #define TRUE 1
 #define TIMEOUT 10

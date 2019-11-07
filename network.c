@@ -116,3 +116,17 @@ create_server_properties(char *address, int port) {
 
     return server;
 }
+
+/**
+ * This function detects for carriage return
+ * */
+bool
+isCarriageReturnPresent(char *str){
+    int i;
+    for(i=0; i < strlen(str); i++) {
+        if(str[i]  == '\n') {
+            return true;
+        }
+    }
+    return false;
+}
