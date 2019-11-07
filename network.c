@@ -16,6 +16,7 @@ read_alarm_signal_handler(int signal) {
 int
 open_connection(char *address, int port) {
     int sock, rval;
+	int init = false;
 	pid_t pid;
 	socklen_t length;
 	struct sockaddr_in server;
@@ -63,12 +64,14 @@ open_connection(char *address, int port) {
 			fprintf(stderr, "Unable to fork process: %s \n", strerror(errno));
 			return 1;
 		} else if (pid == 0) {
+			int *repeat_return = &init;
+
 			if (signal(SIGALRM, read_alarm_signal_handler) == SIG_ERR) {
 				fprintf(stderr, "Could not register signal: %s \n", strerror(errno));
 				return 1;
 			}
 
-			if (alarm(TIMEOUT) < 0) {
+			if (alarm(TIMEOUT) < ((unsigned int) 0)) {
 				fprintf(stderr, "Could not set alarm for timeout: %s \n", strerror(errno));
 			}
 
@@ -78,9 +81,12 @@ open_connection(char *address, int port) {
 					fprintf(stderr, "Could not read message from socket: %s\n", strerror(errno));
 					return 1;
 				}
-			} while (rval != 0);
+			} while (!is_request_complete(buf, repeat_return));
 
+			printf("%s what \n", buf);
 			(void) alarm(0);
+			
+			(void) close(msgsock);
 		} else {
 			(void) close(msgsock);
 		}
@@ -111,7 +117,7 @@ create_server_properties(char *address, int port) {
     if (port > 0) {
         server.sin_port = htons(port); 
     } else {
-        server.sin_port = 0;
+        server.sin_port = 8080;
     }
 
     return server;
@@ -129,4 +135,21 @@ isCarriageReturnPresent(char *str){
         }
     }
     return false;
+}
+
+bool
+is_request_complete(char *line, int *repeat_return) {
+	if (strstr(line, "\015\012\015\012") != NULL) {
+		return true;
+	} else if (strstr(line, "\015\012") != NULL) {
+		if (*repeat_return) {
+			return true;
+		} else {
+			*repeat_return = true;
+		}
+	} else {
+		*repeat_return = false;
+	}
+
+	return false;
 }
