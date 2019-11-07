@@ -124,7 +124,7 @@ bool
 isCarriageReturnPresent(char *str){
     int i;
     for(i=0; i < strlen(str); i++) {
-        if(str[i]  == '\n') {
+        if(str[i]  == '\n' && str[i-1] == '\r') {
             return true;
         }
     }
