@@ -14,6 +14,7 @@
 #include <stdbool.h>
 
 #define TRUE 1
+#define BUFFERSIZE 16384
 #define TIMEOUT 60
 
 struct request {
@@ -27,3 +28,5 @@ int msgsock;
 struct sockaddr_in create_server_properties(char *address, int port);
 int  open_connection(char *address, int port);
 bool is_request_complete(char *line, int *repeat_return);
+int handle_child_request();
+int add_line_to_request(char *request, char *line, unsigned int buffersize);

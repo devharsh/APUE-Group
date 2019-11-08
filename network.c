@@ -15,12 +15,10 @@ read_alarm_signal_handler(int signal) {
  **/
 int
 open_connection(char *address, int port) {
-    int sock, rval;
-	int init = false;
+    int sock;
 	pid_t pid;
 	socklen_t length;
 	struct sockaddr_in server;
-	char buf[BUFSIZ];
 	struct sockaddr_in client;
 
 	sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -64,34 +62,76 @@ open_connection(char *address, int port) {
 			fprintf(stderr, "Unable to fork process: %s \n", strerror(errno));
 			return 1;
 		} else if (pid == 0) {
-			int *repeat_return = &init;
-
-			if (signal(SIGALRM, read_alarm_signal_handler) == SIG_ERR) {
-				fprintf(stderr, "Could not register signal: %s \n", strerror(errno));
-				return 1;
-			}
-
-			if (alarm(TIMEOUT) < ((unsigned int) 0)) {
-				fprintf(stderr, "Could not set alarm for timeout: %s \n", strerror(errno));
-			}
-
-			do {
-				bzero(buf, sizeof(buf));
-				if ((rval = read(msgsock, buf, BUFSIZ)) < 0) {
-					fprintf(stderr, "Could not read message from socket: %s\n", strerror(errno));
-					return 1;
-				}
-			} while (!is_request_complete(buf, repeat_return));
-
-			printf("%s what \n", buf);
-			(void) alarm(0);
-			
-			(void) close(msgsock);
+			int result = handle_child_request();
+			return result;
 		} else {
 			(void) close(msgsock);
 		}
 	} while (TRUE);
 	
+	return 0;
+}
+
+/**
+ * All processing in the child process is available in this function
+ * It basically reads from the socket until consecutive "\r\n" are encountered
+ * 
+**/
+int
+handle_child_request() {
+	int  init = false;
+	int  result = 0;
+	char read_buf[BUFSIZ];
+	int  rval;
+	int  *repeat_return = &init;
+	char *raw_request = malloc(BUFFERSIZE);
+	raw_request[0] = '\0';
+
+	if (raw_request == NULL) {
+		fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
+		return 1;
+	}
+
+	if (signal(SIGALRM, read_alarm_signal_handler) == SIG_ERR) {
+		fprintf(stderr, "Could not register signal: %s \n", strerror(errno));
+		return 1;
+	}
+
+	if (alarm(TIMEOUT) == ((unsigned int) -1)) {
+		fprintf(stderr, "Could not set alarm for timeout: %s \n", strerror(errno));
+	}
+
+	do {
+		bzero(read_buf, sizeof(read_buf));
+		if ((rval = read(msgsock, read_buf, BUFSIZ)) < 0) {
+			fprintf(stderr, "Could not read message from socket: %s\n", strerror(errno));
+			return 1;
+		} else if (rval > 0) {	
+			result = add_line_to_request(raw_request, read_buf, BUFFERSIZE);
+			if (result != 0) {
+				free(raw_request);
+				return 1;
+			}
+		}
+	} while (!is_request_complete(read_buf, repeat_return));
+
+	printf("final %s \n", raw_request);
+
+	(void) alarm(0);
+	(void) free(raw_request); 	
+	(void) close(msgsock);
+
+	return 0;
+}
+
+int
+add_line_to_request(char *request, char *line, unsigned int buffersize) {
+	if (strlcat(request, line, buffersize) > buffersize) {
+		fprintf(stderr, "Could not copy line to request: %s \n",
+				strerror(errno));
+		return 1;
+	}
+
 	return 0;
 }
 
@@ -123,26 +163,12 @@ create_server_properties(char *address, int port) {
     return server;
 }
 
-/**
- * This function detects for carriage return
- * */
-bool
-isCarriageReturnPresent(char *str){
-    int i;
-    for(i=0; i < strlen(str); i++) {
-        if(str[i]  == '\n' && str[i-1] == '\r') {
-            return true;
-        }
-    }
-    return false;
-}
-
 bool
 is_request_complete(char *line, int *repeat_return) {
 	if (strstr(line, "\015\012\015\012") != NULL) {
 		return true;
 	} else if (strstr(line, "\015\012") != NULL) {
-		if (*repeat_return) {
+		if (*repeat_return && (strcmp(line, "\015\012") == 0)) {
 			return true;
 		} else {
 			*repeat_return = true;
@@ -150,6 +176,5 @@ is_request_complete(char *line, int *repeat_return) {
 	} else {
 		*repeat_return = false;
 	}
-
 	return false;
 }
