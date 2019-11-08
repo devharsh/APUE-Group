@@ -79,12 +79,14 @@ open_connection(char *address, int port) {
 **/
 int
 handle_child_request() {
-	int  init = false;
-	int  result = 0;
-	char read_buf[BUFSIZ];
-	int  rval;
-	int  *repeat_return = &init;
-	char *raw_request = malloc(BUFFERSIZE);
+	int  			init = false;
+	int  			is_first_line = 1;
+	int  			result = 0;
+	char 			read_buf[BUFSIZ];
+	int  			rval;
+	int  			*repeat_return = &init;
+	char 			*raw_request = malloc(BUFFERSIZE);
+	struct request 	*req;
 	raw_request[0] = '\0';
 
 	if (raw_request == NULL) {
@@ -107,6 +109,17 @@ handle_child_request() {
 			fprintf(stderr, "Could not read message from socket: %s\n", strerror(errno));
 			return 1;
 		} else if (rval > 0) {	
+			if (is_first_line) {
+				bool valid_first_line = parse_first_line(read_buf, req);
+				if (!valid_first_line) {
+					// handle error 
+					//return 1
+				} else {
+					// handle success case
+				}
+				is_first_line = false;
+			}
+
 			result = add_line_to_request(raw_request, read_buf, BUFFERSIZE);
 			if (result != 0) {
 				free(raw_request);
@@ -116,6 +129,7 @@ handle_child_request() {
 	} while (!is_request_complete(read_buf, repeat_return));
 
 	printf("final %s \n", raw_request);
+	
 
 	(void) alarm(0);
 	(void) free(raw_request);
@@ -179,7 +193,61 @@ is_request_complete(char *line, int *repeat_return) {
 	return false;
 }
 
+/**
+ * Function to parse the first line from the buffer and validate
+ * */
 bool
 parse_first_line(char *line, struct request *req) {
+	int 	validate_req = 0;
+	int 	validate_protocol = 0;
+	char* 	method;
+	char* 	uri;
+	char*	protocol;
 	
+	char *line_ptr = strtok(line, "\r\n");
+	while(line_ptr != NULL) {
+		char	*ptr = strtok(line_ptr, " ");
+		int 	n = 0;
+
+		while (ptr != NULL) {
+			switch (n) {
+				case 0:
+						if((strcmp(ptr, "GET") == 0) || (strcmp(ptr, "HEAD") == 0)) {
+							method = ptr;
+							validate_req = 1;
+						}
+					break;
+					
+				case 1:
+						uri = ptr;
+					break;
+
+				case 2:
+						if(strcmp(ptr, "HTTP/1.0") == 0) {
+							validate_protocol = 1;
+							protocol = ptr;
+						}
+					break;
+
+				default:
+						validate_protocol = 0; 
+						validate_req = 0;
+					break;
+			}
+			n++;
+			ptr = strtok(NULL, " ");
+		}
+
+		line_ptr = strtok(NULL, "\r\n");
+		break;
+	}
+
+	if(validate_req == 0 || validate_protocol == 0) {
+		return false;
+	} else {
+		req->method = method;
+		req->uri = uri;
+		req->protocol = protocol;
+		return true;
+	}
 }
