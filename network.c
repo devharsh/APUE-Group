@@ -118,7 +118,7 @@ handle_child_request() {
 	printf("final %s \n", raw_request);
 
 	(void) alarm(0);
-	(void) free(raw_request); 	
+	(void) free(raw_request);
 	(void) close(msgsock);
 
 	return 0;
@@ -177,4 +177,9 @@ is_request_complete(char *line, int *repeat_return) {
 		*repeat_return = false;
 	}
 	return false;
+}
+
+bool
+parse_first_line(char *line, struct request *req) {
+	
 }
