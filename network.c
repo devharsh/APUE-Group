@@ -87,6 +87,7 @@ handle_child_request() {
 	int  			*repeat_return = &init;
 	char 			*raw_request = malloc(BUFFERSIZE);
 	struct request 	*req;
+	char*           line_dup;
 	raw_request[0] = '\0';
 
 	if (raw_request == NULL) {
@@ -110,7 +111,8 @@ handle_child_request() {
 			return 1;
 		} else if (rval > 0) {	
 			if (is_first_line) {
-				bool valid_first_line = parse_first_line(read_buf, req);
+				line_dup = strdup(read_buf);
+				bool valid_first_line = parse_first_line(line_dup, req);
 				if (!valid_first_line) {
 					(void) close(msgsock);
 					return 1;
@@ -224,7 +226,7 @@ parse_first_line(char *line, struct request *req) {
 					uri = ptr;
 					break;
 				case 2:
-					if (strcmp(ptr, "HTTP/1.0") == 0) {
+					if (strcmp(ptr, "HTTP/1.1") == 0) {
 						validate_protocol = 1;
 						protocol = ptr;
 					}
@@ -253,5 +255,5 @@ parse_first_line(char *line, struct request *req) {
 
 bool
 validate_additional_information(char *line, struct request *req) {
-	
+	return true;
 }
