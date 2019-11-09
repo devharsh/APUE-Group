@@ -40,3 +40,4 @@ bool is_request_complete(char *line, int *repeat_return);
 int handle_child_request();
 int add_line_to_request(char *request, char *line, unsigned int buffersize);
 bool parse_first_line(char *line, struct request *req);
+bool validate_additional_information(char *line, struct request *req);

@@ -112,12 +112,16 @@ handle_child_request() {
 			if (is_first_line) {
 				bool valid_first_line = parse_first_line(read_buf, req);
 				if (!valid_first_line) {
-					// handle error 
-					//return 1
-				} else {
-					// handle success case
-				}
+					(void) close(msgsock);
+					return 1;
+				} 
 				is_first_line = false;
+			} else {
+				bool is_valid_header = validate_additional_information(read_buf, req);
+				if (!is_valid_header) {
+					(void) close(msgsock);
+					return 1;
+				}
 			}
 
 			result = add_line_to_request(raw_request, read_buf, BUFFERSIZE);
@@ -208,36 +212,31 @@ parse_first_line(char *line, struct request *req) {
 	while(line_ptr != NULL) {
 		char	*ptr = strtok(line_ptr, " ");
 		int 	n = 0;
-
 		while (ptr != NULL) {
 			switch (n) {
 				case 0:
-						if((strcmp(ptr, "GET") == 0) || (strcmp(ptr, "HEAD") == 0)) {
-							method = ptr;
-							validate_req = 1;
-						}
+					if ((strcmp(ptr, "GET") == 0) || (strcmp(ptr, "HEAD") == 0)) {
+						method = ptr;
+						validate_req = 1;
+					}
 					break;
-					
 				case 1:
-						uri = ptr;
+					uri = ptr;
 					break;
-
 				case 2:
-						if(strcmp(ptr, "HTTP/1.0") == 0) {
-							validate_protocol = 1;
-							protocol = ptr;
-						}
+					if (strcmp(ptr, "HTTP/1.0") == 0) {
+						validate_protocol = 1;
+						protocol = ptr;
+					}
 					break;
-
 				default:
-						validate_protocol = 0; 
-						validate_req = 0;
+					validate_protocol = 0; 
+					validate_req = 0;
 					break;
 			}
 			n++;
 			ptr = strtok(NULL, " ");
 		}
-
 		line_ptr = strtok(NULL, "\r\n");
 		break;
 	}
@@ -250,4 +249,9 @@ parse_first_line(char *line, struct request *req) {
 		req->protocol = protocol;
 		return true;
 	}
+}
+
+bool
+validate_additional_information(char *line, struct request *req) {
+	
 }
