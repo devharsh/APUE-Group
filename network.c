@@ -151,7 +151,6 @@ add_line_to_request(char *request, char *line, unsigned int buffersize) {
 				strerror(errno));
 		return 1;
 	}
-
 	return 0;
 }
 
@@ -204,20 +203,20 @@ is_request_complete(char *line, int *repeat_return) {
  * */
 bool
 parse_first_line(char *line, struct request *req) {
-	int 	validate_req = 0;
-	int 	validate_protocol = 0;
-	char* 	method;
-	char* 	uri;
-	char*	protocol;
+	int   validate_req = 0, validate_protocol = 0, line_number = 0;
+	char* method;
+	char* uri;
+	char* protocol;
 	
 	char *line_ptr = strtok(line, "\r\n");
-	while(line_ptr != NULL) {
-		char	*ptr = strtok(line_ptr, " ");
-		int 	n = 0;
+	while (line_ptr != NULL) {
+		line_number++;
+		char *ptr = strtok(line_ptr, " ");
+		int  n = 0;
 		while (ptr != NULL) {
 			switch (n) {
 				case 0:
-					if ((strcmp(ptr, "GET") == 0) || (strcmp(ptr, "HEAD") == 0)) {
+					if ((strcmp(ptr, "GET") == 0) || (strcmp(ptr, "HEAD") == 0) && line_number == 1) {
 						method = ptr;
 						validate_req = 1;
 					}
@@ -226,24 +225,28 @@ parse_first_line(char *line, struct request *req) {
 					uri = ptr;
 					break;
 				case 2:
-					if (strcmp(ptr, "HTTP/1.1") == 0) {
+					if (strcmp(ptr, "HTTP/1.1") == 0 && line_number == 1) {
 						validate_protocol = 1;
 						protocol = ptr;
 					}
 					break;
 				default:
-					validate_protocol = 0; 
-					validate_req = 0;
+					if (line_number == 1) {
+						validate_protocol = 0; 
+						validate_req = 0;	
+					} else {
+
+					}
+
 					break;
 			}
 			n++;
 			ptr = strtok(NULL, " ");
 		}
 		line_ptr = strtok(NULL, "\r\n");
-		break;
 	}
 
-	if(validate_req == 0 || validate_protocol == 0) {
+	if (validate_req == 0 || validate_protocol == 0) {
 		return false;
 	} else {
 		req->method = method;
@@ -255,5 +258,46 @@ parse_first_line(char *line, struct request *req) {
 
 bool
 validate_additional_information(char *line, struct request *req) {
+	char *line_pointer = strdup(line);
+	char *date_string = malloc(strlen(line) + 1);
+	int element = 0;
+
+	date_string[0] = "\0";
+
+	if (line_pointer == NULL) {
+		fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
+		exit(1);
+	}
+
+	if (strncasecmp(line, "If-Modified-Since", 18) == 0) {
+		line_pointer = strtok(line_pointer, ":");
+
+		while (line_pointer != NULL) {
+			element++;
+			if (element == 1) {
+				if (strcmp(line_pointer, "If-Modified-Since") == 0) {
+					continue;
+				} else {
+					break;
+				}
+			} else if (element > 1) {
+				if (strlcat(date_string, line_pointer, sizeof(date_string)) > sizeof(date_string)) {
+					fprintf(stderr, "Something went wrong: %s \n", strerror(errno));
+					exit(1);
+				}
+			}
+			line_pointer = strtok(NULL, ":");
+		}
+
+		if (date_string != "\0") {
+
+		}
+	}
+
 	return true;
+}
+
+bool
+validate_date(char* date) {
+	return false;
 }

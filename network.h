@@ -21,6 +21,7 @@ struct request {
     char *method;
     char *protocol;
     char *uri;
+    char *modified_since;
 };
 
 struct response {
