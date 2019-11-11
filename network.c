@@ -136,7 +136,6 @@ handle_child_request() {
 	} while (!is_request_complete(read_buf, repeat_return));
 
 	printf("input %s \n", raw_request);
-	
 
 	(void) alarm(0);
 	(void) free(raw_request);
@@ -205,7 +204,7 @@ parse_first_line(char *line, struct request *req) {
 					}
 					break;
 				case 2:
-					if (strcmp(ptr, "HTTP/1.1") == 0 && line_number == 1) {
+					if (strcmp(ptr, "HTTP/1.0") == 0 && line_number == 1) {
 						validate_protocol = 1;
 						protocol = ptr;
 					}
