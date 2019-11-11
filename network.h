@@ -46,3 +46,4 @@ int add_line_to_request(char *request, char *line, unsigned int buffersize);
 bool parse_first_line(char *line, struct request *req);
 bool validate_additional_information(char *line, struct request *req);
 bool validate_date(char*, struct request *req);
+bool validate_tm(struct tm *time_ptr);

@@ -120,6 +120,7 @@ handle_child_request() {
 				is_first_line = false;
 			} else {
 				bool is_valid_header = validate_additional_information(read_buf, req);
+
 				if (!is_valid_header) {
 					(void) close(msgsock);
 					return 1;
@@ -273,12 +274,12 @@ validate_additional_information(char *line, struct request *req) {
 
 	if (strncasecmp(line, "If-Modified-Since:", 18) == 0) {
 		date_string = strchr(line, ':') + 1;
-		if(validate_date(date_string, req)) {
-			valid = true;
-		}
+		valid = validate_date(date_string, req);
+	} else {
+		valid = true;
 	}
 
-	// (void) free(date_string);
+	//(void) free(date_string);
 	return valid;
 }
 
@@ -287,37 +288,68 @@ validate_date(char* date_str, struct request *req) {
 	char* date;
 	struct tm *timeptr = malloc(sizeof(struct tm));
 	bool valid = false;
+	char buf[100];
 
 	/*Skipping initial  whitespaces*/
 	for (date = date_str; *date == ' ' || *date == '\t'; ++date)
 	continue;
 
-
 	/* wdy, DD mth YY HH:MM:SS GMT */
 	if (strptime(date, "%a, %d %b %Y %T %z", timeptr) != NULL) {
-		req->time = timeptr;
-        req->timestamp = mktime(timeptr);
-		valid = true;
+			req->time = timeptr;
+			req->timestamp = mktime(timeptr);
+			valid = true;
     } 
 	
 	/* wdy, DD-mth-YY HH:MM:SS GMT */
-	else if(strptime(date, "%a, %d-%b-%y %T %z", timeptr) != NULL) {
-		req->time = timeptr;
-        req->timestamp = mktime(timeptr);
-		valid = true;
+	else if (strptime(date, "%a, %d-%b-%y %T %z", timeptr) != NULL) {
+			req->time = timeptr;
+			req->timestamp = mktime(timeptr);
+			valid = true;
 	}
 
 	/* wdy mth DD HH:MM:SS YY */
-	else if(strptime(date, "%a %b  %d %T %Y", timeptr) != NULL) {
-		req->time = timeptr;
-        req->timestamp = mktime(timeptr);
-		valid = true;
-	}
-
-	else {
+	else if (strptime(date, "%a %b  %d %T %Y", timeptr) != NULL) {
+			req->time = timeptr;
+			req->timestamp = mktime(timeptr);
+			valid = true;
+	} else {
         valid = false;
     }
 
 	(void) free(timeptr);
+	return valid;
+}
+
+bool
+validate_tm(struct tm *time_ptr) {
+	char *time_buffer = malloc(11);	
+	char *strf_buffer = malloc(100);
+	bool valid = false;
+
+	time_buffer[0] = '\0';
+	strf_buffer[0] = '\0';
+
+	if (time_buffer == NULL || strf_buffer == NULL) {
+		fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
+		exit(1);
+	}
+
+	if (sprintf(time_buffer, "%i/%i/%i", time_ptr->tm_mon + 1, time_ptr->tm_mday, time_ptr->tm_year) < 0) {
+		fprintf(stderr, "Could not create string from time: %s \n", strerror(errno));
+		exit(1);
+	}
+
+	strftime(strf_buffer, sizeof(strf_buffer), "%x", time_ptr);
+
+	printf("(%s,%s) \n", strf_buffer, time_buffer);
+
+	if (strcmp(time_buffer, strf_buffer) == 0) {
+		valid = true;
+	}
+
+	(void) free(time_buffer);
+	(void) free(strf_buffer);
+
 	return valid;
 }
