@@ -2,9 +2,11 @@
 
 void
 read_alarm_signal_handler(int signal) {
-	fprintf(stderr, "Read timeout for connection");
-	(void) close(msgsock);
-	exit(1);
+	if (signal == SIGALRM) {
+		fprintf(stderr, "Read timeout for connection");
+		(void) close(msgsock);
+		exit(1);
+	}
 }
 
 /**
@@ -14,11 +16,10 @@ read_alarm_signal_handler(int signal) {
  * 
  **/
 int
-open_connection(char *address, int port) {
+open_connection(struct sockaddr_in server) {
     int sock;
 	pid_t pid;
 	socklen_t length;
-	struct sockaddr_in server;
 	struct sockaddr_in client;
 
 	sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -28,7 +29,6 @@ open_connection(char *address, int port) {
 		return 1;
 	}
 	
-    server = create_server_properties(address, port);
 	if (bind(sock, (struct sockaddr *)&server, sizeof(server)) != 0) {
         fprintf(stderr, "Binding to socket failed: %s \n", strerror(errno));
 		return 1;
@@ -135,7 +135,7 @@ handle_child_request() {
 		}
 	} while (!is_request_complete(read_buf, repeat_return));
 
-	printf("final %s \n", raw_request);
+	printf("input %s \n", raw_request);
 	
 
 	(void) alarm(0);
@@ -154,34 +154,6 @@ add_line_to_request(char *request, char *line, unsigned int buffersize) {
 		return 1;
 	}
 	return 0;
-}
-
-/**
- * Create server properties based on the input provided by the user
- * The properties include ip and port to be used. If no ip and port is provided
- * then we listen on all the ip addresses available to us and we listen to a
- * random port assigned to us.
- * 
- **/
-struct sockaddr_in 
-create_server_properties(char *address, int port) {
-	struct sockaddr_in server;
-    server.sin_family = AF_INET;
-    
-    if (address == NULL) {
-        server.sin_addr.s_addr = INADDR_ANY;
-    } else {
-        in_addr_t inet_address = inet_addr(address);
-        server.sin_addr.s_addr = inet_address;
-    }
-
-    if (port > 0) {
-        server.sin_port = htons(port); 
-    } else {
-        server.sin_port = 8080;
-    }
-
-    return server;
 }
 
 bool
@@ -209,22 +181,28 @@ parse_first_line(char *line, struct request *req) {
 	char* method;
 	char* uri;
 	char* protocol;
-	
+	char *ptr;
+	int  n = 0;
+	char *line_pointer_dup;
 	char *line_ptr = strtok(line, "\r\n");
+
 	while (line_ptr != NULL) {
 		line_number++;
-		char *ptr = strtok(line_ptr, " ");
-		int  n = 0;
+		line_pointer_dup = strdup(line_ptr);
+		ptr = strtok(line_pointer_dup, " ");
+		
 		while (ptr != NULL) {
 			switch (n) {
 				case 0:
-					if ((strcmp(ptr, "GET") == 0) || (strcmp(ptr, "HEAD") == 0) && line_number == 1) {
+					if ((strcmp(ptr, "GET") == 0 || strcmp(ptr, "HEAD") == 0) && (line_number == 1)) {
 						method = ptr;
 						validate_req = 1;
 					}
 					break;
 				case 1:
-					uri = ptr;
+					if (line_number == 1) {
+						uri = ptr;
+					}
 					break;
 				case 2:
 					if (strcmp(ptr, "HTTP/1.1") == 0 && line_number == 1) {
@@ -234,17 +212,23 @@ parse_first_line(char *line, struct request *req) {
 					break;
 				default:
 					if (line_number == 1) {
-						validate_protocol = 0; 
-						validate_req = 0;	
+						validate_protocol = 0;
+						validate_req = 0;
 					} else {
-						
-					}
+						bool is_valid_header = validate_additional_information(ptr, req);
 
+						if (is_valid_header) {
+							validate_req = 1;
+						} else {
+							validate_req = 0;
+						}
+					}
 					break;
 			}
 			n++;
 			ptr = strtok(NULL, " ");
 		}
+
 		line_ptr = strtok(NULL, "\r\n");
 	}
 
@@ -262,7 +246,6 @@ bool
 validate_additional_information(char *line, struct request *req) {
 	char *line_pointer = strdup(line);
 	char *date_string = malloc(strlen(line) + 1);
-	int element = 0;
 	bool valid = false;
 
 	date_string[0] = '\0';
@@ -279,7 +262,7 @@ validate_additional_information(char *line, struct request *req) {
 		valid = true;
 	}
 
-	//(void) free(date_string);
+	/*(void) free(date_string); */
 	return valid;
 }
 
@@ -288,7 +271,6 @@ validate_date(char* date_str, struct request *req) {
 	char* date;
 	struct tm *timeptr = malloc(sizeof(struct tm));
 	bool valid = false;
-	char buf[100];
 
 	/*Skipping initial  whitespaces*/
 	for (date = date_str; *date == ' ' || *date == '\t'; ++date)
@@ -341,8 +323,6 @@ validate_tm(struct tm *time_ptr) {
 	}
 
 	strftime(strf_buffer, sizeof(strf_buffer), "%x", time_ptr);
-
-	printf("(%s,%s) \n", strf_buffer, time_buffer);
 
 	if (strcmp(time_buffer, strf_buffer) == 0) {
 		valid = true;

@@ -13,20 +13,16 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include "network.h"
 
 #define TRUE 1
 #define DATA "Half a league, half a league..."
-
-int opt = 0;
-int sock = 0;
-int msgsock = 0;
-int rval = 0;
-int port = 8080;
 
 char buf[BUFSIZ];
 
 socklen_t length;
 
 struct sockaddr_in server;
-struct sockaddr_in client;
+
 struct hostent *hp, *gethostbyname();
+struct sockaddr_in create_server_properties(char *address, int port);

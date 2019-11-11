@@ -38,12 +38,11 @@ struct response {
 
 int msgsock;
 
-struct sockaddr_in create_server_properties(char *address, int port);
-int  open_connection(char *address, int port);
+int open_connection(struct sockaddr_in server);
 bool is_request_complete(char *line, int *repeat_return);
 int handle_child_request();
 int add_line_to_request(char *request, char *line, unsigned int buffersize);
 bool parse_first_line(char *line, struct request *req);
 bool validate_additional_information(char *line, struct request *req);
-bool validate_date(char*, struct request *req);
+bool validate_date(char* date_str, struct request *req);
 bool validate_tm(struct tm *time_ptr);
