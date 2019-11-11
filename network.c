@@ -86,7 +86,7 @@ handle_child_request() {
 	int  			rval;
 	int  			*repeat_return = &init;
 	char 			*raw_request = malloc(BUFFERSIZE);
-	struct request 	*req;
+	struct request 	*req = malloc(sizeof(struct request));
 	char*           line_dup;
 	raw_request[0] = '\0';
 
@@ -109,7 +109,7 @@ handle_child_request() {
 		if ((rval = read(msgsock, read_buf, BUFSIZ)) < 0) {
 			fprintf(stderr, "Could not read message from socket: %s\n", strerror(errno));
 			return 1;
-		} else if (rval > 0) {	
+		} else if (rval > 0) {
 			if (is_first_line) {
 				line_dup = strdup(read_buf);
 				bool valid_first_line = parse_first_line(line_dup, req);
@@ -139,6 +139,7 @@ handle_child_request() {
 
 	(void) alarm(0);
 	(void) free(raw_request);
+	(void) free(req);
 	(void) close(msgsock);
 
 	return 0;
@@ -235,7 +236,7 @@ parse_first_line(char *line, struct request *req) {
 						validate_protocol = 0; 
 						validate_req = 0;	
 					} else {
-
+						
 					}
 
 					break;
@@ -262,7 +263,7 @@ validate_additional_information(char *line, struct request *req) {
 	char *date_string = malloc(strlen(line) + 1);
 	int element = 0;
 
-	date_string[0] = "\0";
+	date_string[0] = '\0';
 
 	if (line_pointer == NULL) {
 		fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
