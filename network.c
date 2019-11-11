@@ -261,43 +261,121 @@ validate_additional_information(char *line, struct request *req) {
 	char *line_pointer = strdup(line);
 	char *date_string = malloc(strlen(line) + 1);
 	int element = 0;
+	bool valid = false;
 
-	date_string[0] = "\0";
+	date_string[0] = '\0';
 
 	if (line_pointer == NULL) {
 		fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
 		exit(1);
 	}
 
-	if (strncasecmp(line, "If-Modified-Since", 18) == 0) {
-		line_pointer = strtok(line_pointer, ":");
-
-		while (line_pointer != NULL) {
-			element++;
-			if (element == 1) {
-				if (strcmp(line_pointer, "If-Modified-Since") == 0) {
-					continue;
-				} else {
-					break;
-				}
-			} else if (element > 1) {
-				if (strlcat(date_string, line_pointer, sizeof(date_string)) > sizeof(date_string)) {
-					fprintf(stderr, "Something went wrong: %s \n", strerror(errno));
-					exit(1);
-				}
-			}
-			line_pointer = strtok(NULL, ":");
-		}
-
-		if (date_string != "\0") {
-
+	if (strncasecmp(line, "If-Modified-Since:", 18) == 0) {
+		date_string = strchr(line, ':') + 1;
+		if(validate_date(date_string, req)) {
+			valid = true;
 		}
 	}
 
-	return true;
+	// (void) free(date_string);
+	return valid;
 }
 
 bool
-validate_date(char* date) {
-	return false;
+validate_date(char* date_str, struct request *req) {
+	char* date;
+	struct tm *timeptr = malloc(sizeof(struct tm));
+	bool valid = false;
+
+	/*Skipping initial  whitespaces*/
+	for (date = date_str; *date == ' ' || *date == '\t'; ++date)
+	continue;
+
+
+	/* wdy, DD mth YY HH:MM:SS GMT */
+	if (strptime(date, "%a, %d %b %Y %T %z", timeptr) != NULL) {
+		req->time = timeptr;
+        req->timestamp = mktime(timeptr);
+		valid = true;
+    } 
+	
+	/* wdy, DD-mth-YY HH:MM:SS GMT */
+	else if(strptime(date, "%a, %d-%b-%y %T %z", timeptr) != NULL) {
+		req->time = timeptr;
+        req->timestamp = mktime(timeptr);
+		valid = true;
+	}
+
+	/* wdy mth DD HH:MM:SS YY */
+	else if(strptime(date, "%a %b  %d %T %Y", timeptr) != NULL) {
+		req->time = timeptr;
+        req->timestamp = mktime(timeptr);
+		valid = true;
+	}
+
+	else {
+        valid = false;
+    }
+
+	(void) free(timeptr);
+	return valid;
+}
+
+int
+validate_weekday(char *weekDay, char* format) {
+	char *abbWeekNames[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+	char *fullWeekNames[7] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+	int index = 0;
+	int valid = false;
+
+	if((strcmp(format, "RFC 822") == 0) || (strcmp(format, "ANSI C") == 0) ) {
+		char **week = abbWeekNames;
+		while(*week != "") {
+			if(strcmp(*week, weekDay) == 0) {
+				valid = true;
+				break;
+			}
+			*week++;	
+			index++;
+		}
+	}
+
+	else if(strcmp(format, "RFC 850") == 0) {
+		char **week = fullWeekNames;
+		while(*week != "") {
+			if(strcmp(*week, weekDay) == 0) {
+				valid = true;
+				break;
+			}
+			*week++;	
+			index++;
+		}
+	}
+
+	else {
+		//  do nothing
+	}
+
+	if(!valid)
+		return -1;
+	return index;
+}
+
+int 
+validate_month(char *month){
+	char *monthNames[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+	char **m = monthNames;
+	int index = 0;
+	bool valid = false;
+	while(*m != "") {
+		if(strcmp(*m, month) == 0) {
+			valid = true;
+			break;
+		}
+		index++;
+		*m++;
+	}
+	if(!valid)
+		return -1;
+	return index;
 }

@@ -12,16 +12,19 @@
 #include <errno.h>
 #include <signal.h>
 #include <stdbool.h>
+#include <time.h>
 
 #define TRUE 1
 #define BUFFERSIZE 16384
 #define TIMEOUT 60
 
 struct request {
-    char *method;
-    char *protocol;
-    char *uri;
-    char *modified_since;
+    char        *method;
+    char        *protocol;
+    char        *uri;
+    char        *modified_since;
+    struct tm   *time;
+    time_t      timestamp;
 };
 
 struct response {
@@ -42,3 +45,6 @@ int handle_child_request();
 int add_line_to_request(char *request, char *line, unsigned int buffersize);
 bool parse_first_line(char *line, struct request *req);
 bool validate_additional_information(char *line, struct request *req);
+bool validate_date(char*, struct request *req);
+int validate_weekday(char*, char*);
+int validate_month(char*);
