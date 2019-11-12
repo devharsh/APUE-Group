@@ -14,6 +14,8 @@ char buf[BUFSIZ];
 
 socklen_t length;
 
+FILE *fp;
+
 struct sockaddr_in server;
 struct hostent *hp, *gethostbyname();
 struct sockaddr_in create_server_properties(char *address, int port);

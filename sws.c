@@ -14,8 +14,8 @@ main(int argc, char* argv[]) {
 			case 'c':
 				break;
 			case 'd':
-				is_chdir = 1;
-				is_close = 1;
+				is_chdir = 0;
+				is_close = 0;
 				break;
 			case 'h':
 				printf("usage: sws [-dh] [-c dir] [-i address]\
@@ -30,6 +30,8 @@ main(int argc, char* argv[]) {
 				bcopy(hp->h_addr, &server.sin_addr, hp->h_length);
 				break;
 			case 'l':
+				fp = fopen(optarg, "w+");
+   				fprintf(fp, "This is testing for fprintf...\n");
 				break;
 			case 'p':
 				port = atoi(optarg);
@@ -65,6 +67,8 @@ main(int argc, char* argv[]) {
 	if (open_connection(server) != 0) {
 		return 1;
 	}
+
+	fclose(fp);
 
 	return 0;
 }
