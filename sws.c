@@ -14,6 +14,8 @@ main(int argc, char* argv[]) {
 			case 'c':
 				break;
 			case 'd':
+				is_chdir = 1;
+				is_close = 1;
 				break;
 			case 'h':
 				printf("usage: sws [-dh] [-c dir] [-i address]\
@@ -43,6 +45,21 @@ main(int argc, char* argv[]) {
 			default:
 				break;
 		}
+	}
+
+	if (setsid() == -1)
+		return (-1);
+
+	if (is_chdir)
+		(void)chdir("/");
+
+	/* daemonize the process */
+	if (is_close && (fd = open(_PATH_DEVNULL, O_RDWR, 0)) != -1) {
+		(void)dup2(fd, STDIN_FILENO);
+		(void)dup2(fd, STDOUT_FILENO);
+		(void)dup2(fd, STDERR_FILENO);
+		if (fd > STDERR_FILENO)
+			(void)close(fd);
 	}
 
 	if (open_connection(server) != 0) {

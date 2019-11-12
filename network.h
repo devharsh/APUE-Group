@@ -1,18 +1,19 @@
 #include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 
 #include <netinet/in.h>
 
+#include <sys/socket.h>
+#include <sys/types.h>
+
+#include <errno.h>
 #include <netdb.h>
+#include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <errno.h>
-#include <signal.h>
-#include <stdbool.h>
 #include <time.h>
+#include <unistd.h>
 
 #define TRUE 1
 #define BUFFERSIZE 16384
@@ -37,11 +38,11 @@ struct response {
 };
 
 int msgsock;
-
 int open_connection(struct sockaddr_in server);
-bool is_request_complete(char *line, int *repeat_return);
 int handle_child_request();
 int add_line_to_request(char *request, char *line, unsigned int buffersize);
+
+bool is_request_complete(char *line, int *repeat_return);
 bool parse_first_line(char *line, struct request *req);
 bool validate_additional_information(char *line, struct request *req);
 bool validate_date(char* date_str, struct request *req);

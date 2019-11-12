@@ -1,6 +1,6 @@
 TARGET = sws 
 CC = cc
-CFLAGS  = -ansi -g -Wall -Werror -Wextra -Wjump-misses-init -Wlogical-op -Wpedantic -Wshadow
+CFLAGS  = -ansi -g -Wall -Werror -Wextra -Wformat=2 -Wno-format-y2k -Wjump-misses-init -Wlogical-op -Wpedantic -Wshadow
 RM = rm -f
 
 default: $(TARGET)
