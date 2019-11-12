@@ -17,7 +17,7 @@ read_alarm_signal_handler(int signal) {
  **/
 int
 open_connection(struct sockaddr_in server) {
-    int sock;
+	int sock;
 	pid_t pid;
 	socklen_t length;
 	struct sockaddr_in client;
@@ -237,6 +237,7 @@ parse_first_line(char *line, struct request *req) {
 		req->method = method;
 		req->uri = uri;
 		req->protocol = protocol;
+		fprintf(fp, "method=%s,\tprotocol=%s,\turi=%s", method, protocol, uri);
 		return true;
 	}
 }
@@ -246,8 +247,6 @@ validate_additional_information(char *line, struct request *req) {
 	char *line_pointer = strdup(line);
 	char *date_string = malloc(strlen(line) + 1);
 	bool valid = false;
-
-	date_string[0] = '\0';
 
 	if (line_pointer == NULL) {
 		fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
@@ -261,7 +260,7 @@ validate_additional_information(char *line, struct request *req) {
 		valid = true;
 	}
 
-	/*(void) free(date_string); */
+	(void) free(date_string);
 	return valid;
 }
 

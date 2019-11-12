@@ -2,9 +2,6 @@
 
 int
 main(int argc, char* argv[]) {
-	int opt = 0;
-	int port = 8080;
-	
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = INADDR_ANY;
 	server.sin_port = htons(8080);
@@ -12,8 +9,10 @@ main(int argc, char* argv[]) {
 	while ((opt = getopt(argc, argv,"c:dhi:l:p:")) != -1) {  
         	switch(opt) {
 			case 'c':
+				flags.c = 1;
 				break;
 			case 'd':
+				flags.d = 1;
 				is_chdir = 0;
 				is_close = 0;
 				break;
@@ -30,8 +29,8 @@ main(int argc, char* argv[]) {
 				bcopy(hp->h_addr, &server.sin_addr, hp->h_length);
 				break;
 			case 'l':
+				flags.l = 1;
 				fp = fopen(optarg, "w+");
-   				fprintf(fp, "This is testing for fprintf...\n");
 				break;
 			case 'p':
 				port = atoi(optarg);

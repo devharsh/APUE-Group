@@ -37,6 +37,8 @@ struct response {
     char *data;
 };
 
+FILE* fp;
+
 int msgsock;
 int open_connection(struct sockaddr_in server);
 int handle_child_request();
