@@ -182,64 +182,56 @@ is_request_complete(char *line, int *repeat_return) {
  * */
 bool
 parse_first_line(char *line, struct request *req) {
-	int   validate_req = 0, validate_protocol = 0, line_number = 0;
-	char* method;
-	char* uri;
-	char* protocol;
-	char *ptr;
-	int  n = 0;
-	char *line_pointer_dup;
-	char *line_ptr = strtok(line, "\r\n");
+	int  validate_req = 0, validate_protocol = 0, line_number = 0, n = 0;
+	char *ptr, *last, *method, *uri, *protocol, *line_pointer_dup;
+	char *line_ptr = strtok_r(line, "\r\n", &last);
 
 	while (line_ptr != NULL) {
 		line_number++;
-		
-		if ((line_pointer_dup = strdup(line_ptr)) == NULL) {
-			fprintf(stderr, "Could not duplicate String: %s \n", strerror(errno));
-			exit(1);
-		}
+		if (line_number > 1) {
+			bool is_valid_header = validate_additional_information(line_ptr, req);
+			if (is_valid_header) {
+				validate_req = 1;
+			} else {
+				validate_req = 0;
+			}
+		} else {
+			if ((line_pointer_dup = strdup(line_ptr)) == NULL) {
+				fprintf(stderr, "Could not duplicate String: %s \n", strerror(errno));
+				exit(1);
+			}
 
-		ptr = strtok(line_pointer_dup, " ");
-		
-		while (ptr != NULL) {
-			switch (n) {
-				case 0:
-					if ((strcmp(ptr, "GET") == 0 || strcmp(ptr, "HEAD") == 0) && (line_number == 1)) {
-						method = ptr;
-						validate_req = 1;
-					}
-					break;
-				case 1:
-					if (line_number == 1) {
-						uri = ptr;
-					}
-					break;
-				case 2:
-					if (strcmp(ptr, "HTTP/1.0") == 0 && line_number == 1) {
-						validate_protocol = 1;
-						protocol = ptr;
-					}
-					break;
-				default:
-					if (line_number == 1) {
+			ptr = strtok(line_pointer_dup, " ");
+			while (ptr != NULL) {
+				switch (n) {
+					case 0:
+						if (strcmp(ptr, "GET") == 0 || strcmp(ptr, "HEAD") == 0) {
+							method = ptr;
+							validate_req = 1;
+						}
+						break;
+					case 1:
+						if (line_number == 1) {
+							uri = ptr;
+						}
+						break;
+					case 2:
+						if (strcmp(ptr, "HTTP/1.1") == 0) {
+							validate_protocol = 1;
+							protocol = ptr;
+						}
+						break;
+					default:
 						validate_protocol = 0;
 						validate_req = 0;
-					} else {
-						bool is_valid_header = validate_additional_information(ptr, req);
-
-						if (is_valid_header) {
-							validate_req = 1;
-						} else {
-							validate_req = 0;
-						}
-					}
-					break;
+						break;
+				}
+				n++;
+				ptr = strtok(NULL, " ");
 			}
-			n++;
-			ptr = strtok(NULL, " ");
 		}
-
-		line_ptr = strtok(NULL, "\r\n");
+		
+		line_ptr = strtok_r(NULL, "\r\n", &last);
 	}
 
 	if (validate_req == 0 || validate_protocol == 0) {
@@ -275,7 +267,7 @@ validate_additional_information(char *line, struct request *req) {
 		valid = true;
 	}
 
-	(void) free(date_string);
+	/* (void) free(date_string); */
 	return valid;
 }
 
