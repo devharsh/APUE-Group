@@ -85,15 +85,17 @@ handle_child_request() {
 	char 			read_buf[BUFSIZ];
 	int  			rval;
 	int  			*repeat_return = &init;
-	char 			*raw_request = malloc(BUFFERSIZE);
-	struct request 	*req = malloc(sizeof(struct request));
+	char 			*raw_request;
+	struct request 	*req;
 	char*           line_dup;
-	raw_request[0] = '\0';
 
-	if (raw_request == NULL) {
+	if ((raw_request = malloc(BUFFERSIZE)) == NULL ||
+		(req = malloc(sizeof(struct request))) == NULL) {
 		fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
 		return 1;
 	}
+
+	raw_request[0] = '\0';
 
 	if (signal(SIGALRM, read_alarm_signal_handler) == SIG_ERR) {
 		fprintf(stderr, "Could not register signal: %s \n", strerror(errno));
@@ -111,7 +113,11 @@ handle_child_request() {
 			return 1;
 		} else if (rval > 0) {
 			if (is_first_line) {
-				line_dup = strdup(read_buf);
+				if ((line_dup = strdup(read_buf)) == NULL) {
+					fprintf(stderr, "Could not duplicate String: %s \n", strerror(errno));
+					exit(1);
+				}
+
 				bool valid_first_line = parse_first_line(line_dup, req);
 				if (!valid_first_line) {
 					(void) close(msgsock);
@@ -187,7 +193,12 @@ parse_first_line(char *line, struct request *req) {
 
 	while (line_ptr != NULL) {
 		line_number++;
-		line_pointer_dup = strdup(line_ptr);
+		
+		if ((line_pointer_dup = strdup(line_ptr)) == NULL) {
+			fprintf(stderr, "Could not duplicate String: %s \n", strerror(errno));
+			exit(1);
+		}
+
 		ptr = strtok(line_pointer_dup, " ");
 		
 		while (ptr != NULL) {
@@ -237,18 +248,22 @@ parse_first_line(char *line, struct request *req) {
 		req->method = method;
 		req->uri = uri;
 		req->protocol = protocol;
-		fprintf(fp, "method=%s,\tprotocol=%s,\turi=%s", method, protocol, uri);
 		return true;
 	}
 }
 
 bool
 validate_additional_information(char *line, struct request *req) {
-	char *line_pointer = strdup(line);
-	char *date_string = malloc(strlen(line) + 1);
+	char *line_pointer;
+	char *date_string;
 	bool valid = false;
 
-	if (line_pointer == NULL) {
+	if ((date_string = malloc(strlen(line) + 1)) == NULL) {
+		fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
+		exit(1);
+	}
+
+	if ((line_pointer = strdup(line)) == NULL) {
 		fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
 		exit(1);
 	}
@@ -267,12 +282,17 @@ validate_additional_information(char *line, struct request *req) {
 bool
 validate_date(char* date_str, struct request *req) {
 	char* date;
-	struct tm *timeptr = malloc(sizeof(struct tm));
+	struct tm *timeptr;
 	bool valid = false;
+
+	if ((timeptr = malloc(sizeof(struct tm))) == NULL) {
+		fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
+		exit(1);
+	}
 
 	/*Skipping initial  whitespaces*/
 	for (date = date_str; *date == ' ' || *date == '\t'; ++date)
-	continue;
+		continue;
 
 	/* wdy, DD mth YY HH:MM:SS GMT */
 	if (strptime(date, "%a, %d %b %Y %T %z", timeptr) != NULL) {
