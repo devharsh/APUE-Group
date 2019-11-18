@@ -9,6 +9,11 @@ read_alarm_signal_handler(int signal) {
 	}
 }
 
+void
+handle_child_process(__attribute__((unused)) int signal) {
+	(void) waitid(P_ALL, 0, NULL ,WNOHANG);
+}
+
 /**
  * open_connection opens up a connection and binds to the 
  * address and port on the machine and will listen to any
@@ -101,7 +106,8 @@ handle_child_request() {
 
 	raw_request[0] = '\0';
 
-	if (signal(SIGALRM, read_alarm_signal_handler) == SIG_ERR) {
+	if (signal(SIGALRM, read_alarm_signal_handler) == SIG_ERR ||
+		signal(SIGCHLD, handle_child_request) == SIG_ERR) {
 		fprintf(stderr, "Could not register signal: %s \n", strerror(errno));
 		return 1;
 	}
