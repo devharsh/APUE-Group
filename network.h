@@ -4,6 +4,7 @@
 
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 
 #include <errno.h>
 #include <netdb.h>
@@ -42,6 +43,7 @@ FILE* fp;
 int msgsock;
 int open_connection(struct sockaddr *server, int protocol);
 int handle_child_request();
+void handle_child_process(__attribute__((unused)) int signal);
 int add_line_to_request(char *request, char *line, unsigned int buffersize);
 
 bool is_request_complete(char *line, int *repeat_return);
