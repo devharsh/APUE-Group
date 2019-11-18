@@ -2,9 +2,10 @@
 
 int
 main(int argc, char* argv[]) {
-	server.sin_family = AF_INET;
-	server.sin_addr.s_addr = INADDR_ANY;
-	server.sin_port = htons(8080);
+	memset(&server, 0, sizeof(server));
+	server.sin6_family = AF_INET6;
+	server.sin6_addr = in6addr_any;
+	server.sin6_port = htons(8080);
 	
 	while ((opt = getopt(argc, argv,"c:dhi:l:p:")) != -1) {  
         	switch(opt) {
@@ -17,8 +18,8 @@ main(int argc, char* argv[]) {
 				is_close = 0;
 				break;
 			case 'h':
-				printf("usage: sws [-dh] [-c dir] [-i address]\
-					 [-l file] [-p port] dir\n");
+				printf("usage: sws [-dh] [-c dir] [-i address] ");
+			 	printf("[-l file] [-p port] dir\n");
 				return 0;
 			case 'i':
 				if ((hp = gethostbyname(optarg)) == NULL) {
@@ -26,7 +27,7 @@ main(int argc, char* argv[]) {
 						optarg);
 					exit(2);
 				}
-				bcopy(hp->h_addr, &server.sin_addr, hp->h_length);
+				bcopy(hp->h_addr, &server.sin6_addr, hp->h_length);
 				break;
 			case 'l':
 				flags.l = 1;
@@ -41,7 +42,7 @@ main(int argc, char* argv[]) {
 					exit(1);
 				}
 
-				server.sin_port = htons(port);
+				server.sin6_port = htons(port);
 				break;	
 			default:
 				break;

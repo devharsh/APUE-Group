@@ -16,7 +16,7 @@ read_alarm_signal_handler(int signal) {
  * 
  **/
 int
-open_connection(struct sockaddr_in server) {
+open_connection(struct sockaddr_in6 server) {
 	int sock;
 	pid_t pid;
 	socklen_t length;
@@ -40,7 +40,7 @@ open_connection(struct sockaddr_in server) {
 		fprintf(stderr, "Error in getting socket name: %s \n", strerror(errno));
 		return 1;
 	}
-	fprintf(stdout, "Socket port #%d\n", ntohs(server.sin_port));
+	fprintf(stdout, "Socket port #%d\n", ntohs(server.sin6_port));
 
 	/* Start accepting connections */
 	listen(sock, 5);

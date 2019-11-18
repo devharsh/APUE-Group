@@ -40,7 +40,7 @@ struct response {
 FILE* fp;
 
 int msgsock;
-int open_connection(struct sockaddr_in server);
+int open_connection(struct sockaddr_in6 server);
 int handle_child_request();
 int add_line_to_request(char *request, char *line, unsigned int buffersize);
 
