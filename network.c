@@ -16,38 +16,42 @@ read_alarm_signal_handler(int signal) {
  * 
  **/
 int
-open_connection(struct sockaddr_in6 server) {
+open_connection(struct sockaddr *server, int protocol) {
 	int sock;
 	pid_t pid;
 	socklen_t length;
-	struct sockaddr_in client;
+	struct sockaddr client;
 
-	sock = socket(AF_INET, SOCK_STREAM, 0);
-
+	if (protocol == 6) {
+		sock = socket(AF_INET6, SOCK_STREAM, 0);
+		length = sizeof(struct sockaddr_in6);
+	} else {
+		sock = socket(AF_INET, SOCK_STREAM, 0);
+		length = sizeof(struct sockaddr_in);
+	}
+	
 	if (sock < 0) {
 		fprintf(stderr, "Could not open socket: %s \n", strerror(errno));
 		return 1;
 	}
 	
-	if (bind(sock, (struct sockaddr *)&server, sizeof(server)) != 0) {
+	if (bind(sock, server, length) != 0) {
         fprintf(stderr, "Binding to socket failed: %s \n", strerror(errno));
 		return 1;
 	}
 
 	/* Find out assigned port number and print it out */
-	length = sizeof(server);
-	if (getsockname(sock, (struct sockaddr *)&server, &length) != 0) {
+	if (getsockname(sock, server, &length) != 0) {
 		fprintf(stderr, "Error in getting socket name: %s \n", strerror(errno));
 		return 1;
 	}
-	fprintf(stdout, "Socket port #%d\n", ntohs(server.sin6_port));
 
 	/* Start accepting connections */
 	listen(sock, 5);
 
 	do {
 		length = sizeof(client);
-		msgsock = accept(sock, (struct sockaddr *)&client, &length);
+		msgsock = accept(sock,	&client, &length);
 
 		if (msgsock == -1) {
 			fprintf(stderr, "Could not accept socket connection: %s \n", strerror(errno));
@@ -310,36 +314,5 @@ validate_date(char* date_str, struct request *req) {
     }
 
 	(void) free(timeptr);
-	return valid;
-}
-
-bool
-validate_tm(struct tm *time_ptr) {
-	char *time_buffer = malloc(11);	
-	char *strf_buffer = malloc(100);
-	bool valid = false;
-
-	time_buffer[0] = '\0';
-	strf_buffer[0] = '\0';
-
-	if (time_buffer == NULL || strf_buffer == NULL) {
-		fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
-		exit(1);
-	}
-
-	if (sprintf(time_buffer, "%i/%i/%i", time_ptr->tm_mon + 1, time_ptr->tm_mday, time_ptr->tm_year) < 0) {
-		fprintf(stderr, "Could not create string from time: %s \n", strerror(errno));
-		exit(1);
-	}
-
-	strftime(strf_buffer, sizeof(strf_buffer), "%x", time_ptr);
-
-	if (strcmp(time_buffer, strf_buffer) == 0) {
-		valid = true;
-	}
-
-	(void) free(time_buffer);
-	(void) free(strf_buffer);
-
 	return valid;
 }

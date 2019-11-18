@@ -1,12 +1,21 @@
 #include "sws.h"
 
 int
-main(int argc, char* argv[]) {
-	memset(&server, 0, sizeof(server));
-	server.sin6_family = AF_INET6;
-	server.sin6_addr = in6addr_any;
-	server.sin6_port = htons(8080);
+main(int argc, char* argv[]) {	
+	/* int fd = 0;*/
+	int is_chdir;
+	int opt;
+	int port;
+	/*int is_close = 1;*/ 
+
+	char *address = NULL;
 	
+	opt = 0;
+	port = 8080;
+ 	is_chdir = 1;
+	
+	server = malloc(sizeof(struct sockaddr));
+
 	while ((opt = getopt(argc, argv,"c:dhi:l:p:")) != -1) {  
         	switch(opt) {
 			case 'c':
@@ -15,19 +24,14 @@ main(int argc, char* argv[]) {
 			case 'd':
 				flags.d = 1;
 				is_chdir = 0;
-				is_close = 0;
+				/*is_close = 0;*/
 				break;
 			case 'h':
 				printf("usage: sws [-dh] [-c dir] [-i address] ");
 			 	printf("[-l file] [-p port] dir\n");
 				return 0;
 			case 'i':
-				if ((hp = gethostbyname(optarg)) == NULL) {
-					fprintf(stderr, "%s: unknown host\n",
-						optarg);
-					exit(2);
-				}
-				bcopy(hp->h_addr, &server.sin6_addr, hp->h_length);
+				address = optarg;
 				break;
 			case 'l':
 				flags.l = 1;
@@ -42,33 +46,65 @@ main(int argc, char* argv[]) {
 					exit(1);
 				}
 
-				server.sin6_port = htons(port);
 				break;	
 			default:
 				break;
 		}
 	}
 
-	if (setsid() == -1)
-		return (-1);
+	if ((server = validate_address(address, port)) == NULL) {
+		fprintf(stderr, "Not a valid address!");
+		return 1;
+	}
+
+	/*if (setsid() == -1)
+		return (-1);*/
 
 	if (is_chdir)
-		(void)chdir("/");
+		(void) chdir("/");
 
-	/* daemonize the process */
+	/* daemonize the process 
 	if (is_close && (fd = open(_PATH_DEVNULL, O_RDWR, 0)) != -1) {
 		(void)dup2(fd, STDIN_FILENO);
 		(void)dup2(fd, STDOUT_FILENO);
 		(void)dup2(fd, STDERR_FILENO);
 		if (fd > STDERR_FILENO)
 			(void)close(fd);
-	}
-
-	if (open_connection(server) != 0) {
+	}*/
+	
+	if (open_connection(server, protocol) != 0) {
 		return 1;
 	}
 
+	free(server);
 	fclose(fp);
 
 	return 0;
+}
+
+struct sockaddr*
+validate_address(char *input_address, int port) {
+	if (input_address == NULL) {
+		protocol = 4;
+		socket_address_ipv4.sin_family = AF_INET;
+		socket_address_ipv4.sin_addr.s_addr = INADDR_ANY;
+		socket_address_ipv4.sin_port = htons(port);
+		return (struct sockaddr*) &socket_address_ipv4;
+	}
+
+	if (inet_pton(AF_INET, input_address, &(socket_address_ipv4.sin_addr)) == 1) {
+		protocol = 4;
+		socket_address_ipv4.sin_family = AF_INET;
+		socket_address_ipv4.sin_port = htons(port);
+		return (struct sockaddr*) &socket_address_ipv4;
+	}
+
+	if (inet_pton(AF_INET6, input_address, &(socket_address_ipv6.sin6_addr)) == 1) {
+		protocol = 6;
+		socket_address_ipv6.sin6_family = AF_INET6;
+		socket_address_ipv6.sin6_port = htons(port);
+		return (struct sockaddr*) &socket_address_ipv6;
+	}
+
+	return NULL;
 }
