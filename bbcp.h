@@ -16,3 +16,9 @@
 #ifndef BUF_LIMIT
 #define BUF_LIMIT 512
 #endif
+
+int
+fileCopy(char* source, char* destination);
+
+int
+htmlResponse(char* str_html); 

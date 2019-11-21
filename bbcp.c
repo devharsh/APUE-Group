@@ -88,3 +88,10 @@ fileCopy(char* source, char* destination) {
 	return(0);
 }
 
+int
+htmlResponse(char* str_html) {
+	strcpy(str_html, "<html><head><title>");
+	strcpy(str_html, "</title><body>");
+	strcpy(str_html, "</body></html>");
+	return 0;
+}
