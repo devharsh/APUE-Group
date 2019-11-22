@@ -46,6 +46,7 @@ directory_indexing(char* path) {
 
 	if (has_index) {
 		/* respond with index.html */
+		/* call fileCopy from bbcp */
 	} else if (listing != NULL) {
 		printf("%s", listing);
 	}
