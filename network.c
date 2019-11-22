@@ -153,6 +153,8 @@ handle_child_request() {
 
 	printf("input %s \n", raw_request);
 
+	traverse_files(req);
+
 	(void) alarm(0);
 	(void) free(raw_request);
 	(void) free(req);

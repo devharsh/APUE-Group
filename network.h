@@ -15,6 +15,8 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <dirent.h>
+#include <fts.h>
 
 #define TRUE 1
 #define BUFFERSIZE 16384
@@ -29,6 +31,25 @@ struct request {
     time_t      timestamp;
 };
 
+
+/**
+ * Status-Code    = "200"   ; OK
+                      | "201"   ; Created
+                      | "202"   ; Accepted
+                      | "204"   ; No Content
+                      | "301"   ; Moved Permanently
+                      | "302"   ; Moved Temporarily
+                      | "304"   ; Not Modified
+                      | "400"   ; Bad Request
+                      | "401"   ; Unauthorized
+                      | "403"   ; Forbidden
+                      | "404"   ; Not Found
+                      | "500"   ; Internal Server Error
+                      | "501"   ; Not Implemented
+                      | "502"   ; Bad Gateway
+                      | "503"   ; Service Unavailable
+                      | extension-code
+*/
 struct response {
     char *date;
     char *server;
@@ -42,6 +63,7 @@ FILE* fp;
 
 int msgsock;
 int open_connection(struct sockaddr *server, int protocol);
+int (*compar) (const FTSENT **, const FTSENT **);
 int handle_child_request();
 void handle_child_process(__attribute__((unused)) int signal);
 int add_line_to_request(char *request, char *line, unsigned int buffersize);
@@ -51,3 +73,6 @@ bool parse_first_line(char *line, struct request *req);
 bool validate_additional_information(char *line, struct request *req);
 bool validate_date(char* date_str, struct request *req);
 bool validate_tm(struct tm *time_ptr);
+int traverse_files(struct request *req);
+int sortLexographical(const FTSENT **fileEntryPointer, const FTSENT **fileEntryPointerTwo);
+void generate_html(char* data);

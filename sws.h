@@ -7,6 +7,9 @@
 #include "network.h"
 
 int protocol;
+int fd = 0;
+int is_chdir = 1;
+int is_close = 1;
 
 char buf[BUFSIZ];
 

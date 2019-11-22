@@ -19,13 +19,8 @@ main(int argc, char* argv[]) {
 	while ((opt = getopt(argc, argv,"c:dhi:l:p:")) != -1) {  
         	switch(opt) {
 			case 'c':
-				flags.c = 1;
 				break;
 			case 'd':
-				flags.d = 1;
-				is_chdir = 0;
-				/*is_close = 0;*/
-				break;
 			case 'h':
 				printf("usage: sws [-dh] [-c dir] [-i address] ");
 			 	printf("[-l file] [-p port] dir\n");
@@ -34,8 +29,6 @@ main(int argc, char* argv[]) {
 				address = optarg;
 				break;
 			case 'l':
-				flags.l = 1;
-				fp = fopen(optarg, "w+");
 				break;
 			case 'p':
 				port = atoi(optarg);
@@ -82,6 +75,7 @@ main(int argc, char* argv[]) {
 	return 0;
 }
 
+
 struct sockaddr*
 validate_address(char *input_address, int port) {
 	if (input_address == NULL) {
@@ -105,6 +99,6 @@ validate_address(char *input_address, int port) {
 		socket_address_ipv6.sin6_port = htons(port);
 		return (struct sockaddr*) &socket_address_ipv6;
 	}
-
+	
 	return NULL;
 }
