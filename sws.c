@@ -15,6 +15,7 @@ main(int argc, char* argv[]) {
  	is_chdir = 1;
 	
 	server = malloc(sizeof(struct sockaddr));
+	server_info.server_name = "SWS_HTTP/1.0";
 
 	while ((opt = getopt(argc, argv,"c:dhi:l:p:")) != -1) {  
         	switch(opt) {
@@ -62,7 +63,6 @@ main(int argc, char* argv[]) {
 
 	if (is_chdir)
 		(void) chdir("/");
-
 	/* daemonize the process 
 	if (is_close && (fd = open(_PATH_DEVNULL, O_RDWR, 0)) != -1) {
 		(void)dup2(fd, STDIN_FILENO);
@@ -72,7 +72,7 @@ main(int argc, char* argv[]) {
 			(void)close(fd);
 	}*/
 	
-	if (open_connection(server, protocol) != 0) {
+	if (open_connection(server, server_info) != 0) {
 		return 1;
 	}
 
@@ -84,8 +84,10 @@ main(int argc, char* argv[]) {
 
 struct sockaddr*
 validate_address(char *input_address, int port) {
+	server_info.port = htons(port); 
+
 	if (input_address == NULL) {
-		protocol = 4;
+		server_info.protocol = 4;
 		socket_address_ipv4.sin_family = AF_INET;
 		socket_address_ipv4.sin_addr.s_addr = INADDR_ANY;
 		socket_address_ipv4.sin_port = htons(port);
@@ -93,14 +95,14 @@ validate_address(char *input_address, int port) {
 	}
 
 	if (inet_pton(AF_INET, input_address, &(socket_address_ipv4.sin_addr)) == 1) {
-		protocol = 4;
+		server_info.protocol = 4;
 		socket_address_ipv4.sin_family = AF_INET;
 		socket_address_ipv4.sin_port = htons(port);
 		return (struct sockaddr*) &socket_address_ipv4;
 	}
 
 	if (inet_pton(AF_INET6, input_address, &(socket_address_ipv6.sin6_addr)) == 1) {
-		protocol = 6;
+		server_info.protocol = 6;
 		socket_address_ipv6.sin6_family = AF_INET6;
 		socket_address_ipv6.sin6_port = htons(port);
 		return (struct sockaddr*) &socket_address_ipv6;
