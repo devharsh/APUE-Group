@@ -21,13 +21,13 @@ handle_child_process(__attribute__((unused)) int signal) {
  * 
  **/
 int
-open_connection(struct sockaddr *server, int protocol) {
+open_connection(struct sockaddr *server, struct server_information server_info) {
 	int sock;
 	pid_t pid;
 	socklen_t length;
 	struct sockaddr client;
 
-	if (protocol == 6) {
+	if (server_info.protocol == 6) {
 		sock = socket(AF_INET6, SOCK_STREAM, 0);
 		length = sizeof(struct sockaddr_in6);
 	} else {
@@ -324,3 +324,8 @@ validate_date(char* date_str, struct request *req) {
 	(void) free(timeptr);
 	return valid;
 }
+
+/*
+* TODO: add date validation
+* TODO: add response common code
+*/

@@ -10,11 +10,11 @@ int protocol;
 int fd = 0;
 int is_chdir = 1;
 int is_close = 1;
-
 char buf[BUFSIZ];
 
 struct sockaddr_in socket_address_ipv4;
 struct sockaddr_in6 socket_address_ipv6;
+struct server_information server_info;
 
 socklen_t length;
 
