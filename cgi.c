@@ -16,17 +16,20 @@ cgi_request(struct request *req,__attribute__((unused)) struct response *res, st
     if ((output_buffer = malloc(BUFFERSIZE)) == NULL || 
         (error_buffer = malloc(BUFFERSIZE))) {
         fprintf(stdout, "Could not allocate memory: %s\n", strerror(errno));
-        exit(1);
+        generate_error_response(res, info, 500, "Could not allocate memory");
+        return 1;
     }
 
     if (pipe(output) < 0 || pipe(error) < 0) {
         fprintf(stdout, "Could not generate output: %s \n", strerror(errno));
-        exit(1);
+        generate_error_response(res, info, 500, "Could not allocate memory");
+        return 1;
     }
 
     if ((child = fork()) < 0) {
         fprintf(stderr, "Could not fork a new process: %s \n", strerror(errno));
-        exit(1);
+        generate_error_response(res, info, 500, "Internal Server Error");
+        return 1;
     } else if (child == 0) {
         (void) close(output[0]);
         (void) close(error[0]);
@@ -34,20 +37,22 @@ cgi_request(struct request *req,__attribute__((unused)) struct response *res, st
         if (output[1] != STDOUT_FILENO) {
             if (dup2(output[1], STDOUT_FILENO) != STDOUT_FILENO) {
                 fprintf(stderr, "Could not duplicate fd: %s \n", strerror(errno));
-                exit(1);
+                generate_error_response(res, info, 500, "Internal Server Error");
+                return 1;
             }
         }
 
         if (error[1] != STDERR_FILENO) {
             if (dup2(error[1], STDERR_FILENO) != STDERR_FILENO) {
                 fprintf(stderr, "Could not duplicate fd: %s \n", strerror(errno));
-                exit(1);
+                generate_error_response(res, info, 500, "Internal Server Error");
+                return 1;
             }
         }
 
         (void) set_environment(req, server_info);
 
-        (void) execl(req->uri, (char *) 0);
+        (void) execl(path, (char *) 0);
         return 1;
 
     } else {
@@ -59,20 +64,23 @@ cgi_request(struct request *req,__attribute__((unused)) struct response *res, st
             (output_store = malloc(BUFFERSIZE)) == NULL  ||
             (error_store = malloc(BUFFERSIZE)) == NULL) {
             fprintf(stderr, "Could not allocate space: %s \n", strerror(errno));
-            exit(1);
+            generate_error_response(res, info, 500, "Internal Server Error");
+            return 1;
         }
 
         while ((content = read(output[0], output_store, BUFFERSIZE)) > 0) {
             if (strlcat(output_buffer, output_store, BUFFERSIZE) > BUFFERSIZE) {
                 fprintf(stderr, "Could not allocate space: %s \n", strerror(errno));
-                exit(1);
+                generate_error_response(res, info, 500, "Internal Server Error");
+                return 1;
             }
         }
 
         while ((content = read(error[0], error_store, BUFFERSIZE)) > 0) {
            if (strlcat(output_buffer, output_store, BUFFERSIZE) > BUFFERSIZE) {
                 fprintf(stderr, "Could not allocate space: %s \n", strerror(errno));
-                exit(1);
+                generate_error_response(res, info, 500, "Internal Server Error");
+                return 1;
            }
         }
 
@@ -88,6 +96,52 @@ cgi_request(struct request *req,__attribute__((unused)) struct response *res, st
     return 0;
 }
 
+void
+generate_response(struct response *res, struct server_information info, char *output, char *error) {
+    char *output_dup, *error_dup;
+
+    if (strlen(output) > 0) {
+        if (strncmp(output, "Content-Type:", 13) != 0 ) {
+            generate_error_response(res, info, 500, "Incorrect Output from script");
+            return;
+        } else {
+            res->status = 200;
+        }
+
+        res->content_length = strlen(output);
+        
+        if ((output_dup = strdup(output)) == NULL) {
+            generate_error_response(res, info, 500, "Could not allocate memory");
+            return;
+        } else {
+            res->data = output_dup;
+        }
+
+        res->server = info.server_name;
+    } else {
+        if (strlen(error) > 0) {
+            if ((error_dup = strdup(error)) == NULL) {
+                generate_error_response(res, info, 500, "Could not allocate memory");
+                return;
+            }
+            generate_error_response(res, info, 500, error_dup);
+        } else {
+            generate_error_response(res, info, 500, "Something went wrong");
+        }
+        return;
+    }    
+}
+
+void
+generate_error_response(struct response *res, struct server_information info, int status, char *error) {
+    res->status = status;
+    res->data = error;
+    res->content_type = "text/html";
+    res->content_length = strlen(error);
+    res->server = info.server_name;
+    // Add date
+}
+
 int
 is_valid_uri(char *uri) {
     if (strstr(uri, "/../") != NULL) {
@@ -99,11 +153,10 @@ is_valid_uri(char *uri) {
 int
 set_environment(struct request *req, struct server_information server_info) {
     char *hostname, *port;
-
     /*
     * PATH_TRANSLATED - request
-    * SCRIPT_NAME - request
     */
+
     hostname = get_hostname();
     port = convert_int_to_string(server_info.port);
 
@@ -116,8 +169,15 @@ set_environment(struct request *req, struct server_information server_info) {
     (void) set_env("SERVER_SOFTWARE", server_info.server_name);
     (void) set_env("SERVER_PORT", port);
     (void) set_env("SERVER_NAME", hostname);
-    (void) set_env("PATH_INFO", path_info);
-    (void) set_env("QUERY_STRING", query_string);
+    
+    if (path_info != NULL) {
+        (void) set_env("PATH_INFO", path_info);
+    }
+
+    if (query_string != NULL) {
+        (void) set_env("QUERY_STRING", query_string);
+    }
+    
     (void) set_env("SCRIPT_NAME", path);
 
     return 1;
