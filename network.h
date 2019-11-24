@@ -55,11 +55,11 @@ struct request {
 
 struct response {
     char *date; 
-    char *server;  
+    char *server; 
     char *last_modified; 
     char *content_type; 
-    int  content_length;
-    char *data;
+    int  content_length; 
+    char *data; 
 };
 
 struct server_information {
@@ -71,12 +71,12 @@ struct server_information {
 
 FILE* fp;
 
-int msgsock;
-int open_connection(struct sockaddr *server, struct server_information);
-int (*compar) (const FTSENT **, const FTSENT **);
-int handle_child_request();
-void handle_child_process(__attribute__((unused)) int signal);
-int add_line_to_request(char *request, char *line, unsigned int buffersize);
+int     msgsock;
+int     open_connection(struct sockaddr *server, struct server_information);
+int     (*compar) (const FTSENT **, const FTSENT **);
+int     handle_child_request();
+void    handle_child_process(__attribute__((unused)) int signal);
+int     add_line_to_request(char *request, char *line, unsigned int buffersize);
 
 bool is_request_complete(char *line, int *repeat_return);
 bool parse_first_line(char *line, struct request *req);
@@ -93,3 +93,12 @@ char * get_hostname();
 void set_env(char *key, char *value);
 unsigned int get_number_of_digits(int number);
 char * convert_int_to_string(int number);
+bool    is_request_complete(char *line, int *repeat_return);
+bool    parse_first_line(char *line, struct request *req);
+bool    validate_additional_information(char *line, struct request *req);
+bool    validate_date(char* date_str, struct request *req);
+bool    validate_tm(struct tm *time_ptr);
+int     traverse_files(struct request *req);
+int     sortLexographical(const FTSENT **fileEntryPointer, const FTSENT **fileEntryPointerTwo);
+char*   generate_error_contents(int e_no);
+char*   prepare_listing_table(char* data);

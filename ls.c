@@ -13,9 +13,11 @@ traverse_files(struct request *req)
     FTSENT  *children;
     int     options;
     char    **arguments;
-    char    *files;
+    char    *contents;
     char    f_name[MAXNAMLEN];
     bool    index_file_found = false;
+    char    *html;
+    bool    err_flag = false;
 
     compar = &sortLexographical;
     options = FTS_PHYSICAL | FTS_NOCHDIR;
@@ -26,7 +28,7 @@ traverse_files(struct request *req)
     }
     arguments[0] = req->uri;
 
-    if((files = malloc(BUFFERSIZE)) == NULL) {
+    if((contents = malloc(BUFFERSIZE)) == NULL) {
         fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
 		exit(1);
     }
@@ -45,6 +47,15 @@ traverse_files(struct request *req)
         children = fts_children(ftsp, 0);
 
         if (children == NULL) {
+            if(ftsent->fts_level < 1) {
+                if (ftsent->fts_info == FTS_ERR || 
+                    ftsent->fts_info == FTS_DNR ||
+                    ftsent->fts_info == FTS_NS) {
+                        err_flag = true;
+                        contents = generate_error_contents(ftsent->fts_errno);
+                        break;
+                    }
+            } 
             continue;
         }
 
@@ -60,54 +71,160 @@ traverse_files(struct request *req)
                     break;
                 }
 
-                if (sprintf(f_name, "<tr> <td> <a href='#'> %s </a> </td> </tr>\n", children->fts_name) < 0) {
+                if (sprintf(f_name, "\
+                                    <tr>\n\
+                                        <td>\n\
+                                            <a href='#'>%s</a>\n\
+                                        </td>\n\
+                                    </tr>\n", 
+                                    children->fts_name) < 0) {
                     fprintf(stderr, "read error %s\n", children->fts_name);
                 }
                 
-                strcat(files, f_name);
+                strcat(contents, f_name);
             }
             children = children->fts_link;
         }
     }
 
     if(index_file_found) {
-        /* handle code for  index.html */
+        /* TODO: handle code for  index.html */
     } else  {
-        // printf("%s", files);
-        generate_html(files);
-        /*  generate response. */
+        if(err_flag) {
+            /* URI/Permissions are invalid - generating html for error */
+            /* do something if necessary */
+        } else {
+            /* URI/Permissions are valid - generating html for directory listing */
+            contents = prepare_listing_table(contents);
+        }
+        html = generate_html(contents);
+        printf("%s", html);
     }
     
     (void) free(arguments);
-    (void) free(files);
+    (void) free(contents);
 
     return 0;
 }
 
-
-void 
+/**
+ * Function to generate HTML content
+ * */
+char* 
 generate_html(char* data) {
     char *html;
+    char *r_html;
 
     if((html = malloc(BUFFERSIZE)) == NULL) {
         fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
 		exit(1);
     }
 
-    if (sprintf(html, "<!DOCTYPE html> <html> <body> <table> <thead> <tr class='header'> <th> Name </th> </tr> </thead> <tbody> %s </tbody> </table> </body> </html>\n", data) < 0) {
+    if (sprintf(html, "\
+                        <html> \n\
+                            <body>\n\
+                                %s \n\
+                            </body>\n\
+                        </html>\n", data) < 0) {
         fprintf(stderr, "read error %s\n", data);
     }
 
-    printf("%s", html);
+    if ((r_html = strdup(html)) == NULL) {
+        fprintf(stderr, "Out of memory.\n");
+        exit(EXIT_FAILURE);
+    }
     
     (void) free(html);
+    
+    return r_html;
+}
+
+/**
+ * This function generates table for Directory listing
+ * */
+char*   
+prepare_listing_table(char* data){
+    char *table;
+    char *r_table;
+
+    if((table = malloc(BUFFERSIZE)) == NULL) {
+        fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
+		exit(1);
+    }
+
+    if (sprintf(table, "\
+                        <table>\n\
+                            <thead> \n\
+                                <tr> \n\
+                                    <th>Name</th> \n\
+                                </tr> \n\
+                            </thead> \n\
+                            <tbody> \n\
+                                %s \n\
+                            </tbody> \n\
+                        </table>\n", data) < 0) {
+        fprintf(stderr, "read error %s\n", data);
+    }
+    
+    if ((r_table = strdup(table)) == NULL) {
+        fprintf(stderr, "Out of memory.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    (void) free(table);
+
+    return r_table;
+}
+
+
+/**
+ * This function generates error contents if any while 
+ * performing directory indexing.
+ * */
+char*
+generate_error_contents(int err_number) {
+    char *content;
+    char *r_content;
+
+    if((content = malloc(BUFFERSIZE)) == NULL) {
+        fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
+		exit(1);
+    }
+
+    switch (err_number)
+    {
+        case ENOENT:
+            /* response code - 404 */
+            if (sprintf(content, "<div> 404 Page not found error: %s </div>", strerror(err_number)) < 0) {
+                fprintf(stderr, "read error %s\n", strerror(err_number));
+            }
+            break;
+        case EACCES:
+            /* response code - 401 */
+            if (sprintf(content, "<div> 401 Forbidden request: %s </div>", strerror(err_number)) < 0) {
+                fprintf(stderr, "read error %s\n", strerror(err_number));
+            }
+            break;
+        default:
+            break;
+    }
+
+    if ((r_content = strdup(content)) == NULL) {
+        fprintf(stderr, "Out of memory.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    (void) free(content);
+
+    return r_content;
 }
 
 
 /**
  * This is a comparator function in the FTS - to sort files lexogrraphically
  * */
-int sortLexographical(const FTSENT **fileEntryPointer, const FTSENT **fileEntryPointerTwo) {
+int 
+sortLexographical(const FTSENT **fileEntryPointer, const FTSENT **fileEntryPointerTwo) {
     const FTSENT *file1 = *fileEntryPointer;
     const FTSENT *file2 = *fileEntryPointerTwo;
     return strcmp(file1->fts_name, file2->fts_name);
