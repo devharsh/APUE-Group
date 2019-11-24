@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 
 #include <errno.h>
 #include <netdb.h>
@@ -17,6 +18,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <fts.h>
+#include <limits.h>
 
 #define TRUE 1
 #define BUFFERSIZE 16384
@@ -52,12 +54,12 @@ struct request {
 */
 
 struct response {
-    char *date; // server date
-    char *server; // sws 
-    char *last_modified; // directory last modified
-    char *content_type; // depends
-    int  content_length; // calculate
-    char *data; // depends
+    char *date; 
+    char *server;  
+    char *last_modified; 
+    char *content_type; 
+    int  content_length;
+    char *data;
 };
 
 struct server_information {
@@ -84,3 +86,10 @@ bool validate_tm(struct tm *time_ptr);
 int traverse_files(struct request *req);
 int sortLexographical(const FTSENT **fileEntryPointer, const FTSENT **fileEntryPointerTwo);
 void generate_html(char* data);
+void append_char(char *string, char character);
+void generate_uri_information(char *uri);
+int set_environment(struct request *req, struct server_information server_info);
+char * get_hostname();
+void set_env(char *key, char *value);
+unsigned int get_number_of_digits(int number);
+char * convert_int_to_string(int number);
