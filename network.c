@@ -71,7 +71,7 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
 			fprintf(stderr, "Unable to fork process: %s \n", strerror(errno));
 			return 1;
 		} else if (pid == 0) {
-			int result = handle_child_request();
+			int result = handle_child_request(server_info);
 			return result;
 		} else {
 			(void) close(msgsock);
@@ -87,7 +87,7 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
  * 
 **/
 int
-handle_child_request() {
+handle_child_request(struct server_information server_info) {
 	int  			init = false;
 	int  			is_first_line = 1;
 	int  			result = 0;
@@ -97,9 +97,12 @@ handle_child_request() {
 	char 			*raw_request;
 	struct request 	*req;
 	char*           line_dup;
+	struct response *res;
+
 
 	if ((raw_request = malloc(BUFFERSIZE)) == NULL ||
-		(req = malloc(sizeof(struct request))) == NULL) {
+		(req = malloc(sizeof(struct request))) == NULL ||
+		(res = malloc(sizeof(struct response))) == NULL) {
 		fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
 		return 1;
 	}
@@ -152,6 +155,13 @@ handle_child_request() {
 	} while (!is_request_complete(read_buf, repeat_return));
 
 	printf("input %s \n", raw_request);
+	
+	cgi_request(req, res, server_info);
+
+	printf("%i\n", res->status);
+	printf("%i\n", res->content_length);
+	printf("%s\n", res->data);
+	printf("%s\n", res->server);
 
 	(void) alarm(0);
 	(void) free(raw_request);
