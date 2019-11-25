@@ -189,10 +189,10 @@ set_environment(struct request *req, struct response *res, struct server_informa
         return NULL;
     }
 
-    if((uri_status = generate_uri_information(req->uri)) > 0 {
+    if((uri_status = generate_uri_information(req->uri)) > 0) {
         return NULL;
     } else if (uri_status < 0) {
-        generate_error_response(res, info, 404, "Resource not found as mentioned");
+        generate_error_response(res, server_info, 404, "Resource not found as mentioned");
         return NULL;
     }
 
