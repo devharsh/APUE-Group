@@ -155,13 +155,6 @@ handle_child_request(struct server_information server_info) {
 	} while (!is_request_complete(read_buf, repeat_return));
 
 	printf("input %s \n", raw_request);
-	
-	cgi_request(req, res, server_info);
-
-	printf("%i\n", res->status);
-	printf("%i\n", res->content_length);
-	printf("%s\n", res->data);
-	printf("%s\n", res->server);
 
 	(void) alarm(0);
 	(void) free(raw_request);
