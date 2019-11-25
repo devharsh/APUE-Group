@@ -15,6 +15,8 @@ cgi_request(struct request *req, struct response *res, struct server_information
 
     pid_t child;
 
+    res->status = 200;
+
     if ((output_buffer = malloc(BUFFERSIZE)) == NULL || 
         (error_buffer = malloc(BUFFERSIZE)) == NULL) {
         fprintf(stdout, "Could not allocate memory 1: %s\n", strerror(errno));
@@ -52,8 +54,10 @@ cgi_request(struct request *req, struct response *res, struct server_information
             }
         }
 
-        if ((set_environment(req, server_info, environment)) == NULL) {
-            generate_error_response(res, server_info, 500, "Internal Server Error");
+        if ((set_environment(req, res, server_info, environment)) == NULL) {
+            if (res->status == 200) {
+                generate_error_response(res, server_info, 500, "Internal Server Error");
+            }
             return 1;
         }
 
@@ -108,7 +112,7 @@ cgi_request(struct request *req, struct response *res, struct server_information
 void
 generate_response(struct response *res, struct server_information info, char *output, char *error) {
     char *output_dup, *error_dup;
-
+    
     if (strlen(output) > 0) {
         if (strncmp(output, "Content-Type:", 13) != 0 ) {
             generate_error_response(res, info, 500, "Incorrect Output from script");
@@ -160,9 +164,9 @@ is_valid_uri(char *uri) {
 }
 
 char **
-set_environment(struct request *req, struct server_information server_info, char **environment) {
+set_environment(struct request *req, struct response *res, struct server_information server_info, char **environment) {
     char *hostname, *port, *env_path;
-    int length;
+    int length, uri_status;
     int env_index = 0;
     
     /*
@@ -181,9 +185,16 @@ set_environment(struct request *req, struct server_information server_info, char
     }
 
     get_hostname(hostname);
-    convert_int_to_string(server_info.port, port);
+    if (convert_int_to_string(server_info.port, port) != 0) {
+        return NULL;
+    }
 
-    (void) generate_uri_information(req->uri);
+    if((uri_status = generate_uri_information(req->uri)) > 0 {
+        return NULL;
+    } else if (uri_status < 0) {
+        generate_error_response(res, info, 404, "Resource not found as mentioned");
+        return NULL;
+    }
 
     environment[env_index++] = "AUTH_TYPE=Basic";
     environment[env_index++] = "GATEWAY_INTERFACE=CGI/1.1";
@@ -282,22 +293,22 @@ get_hostname(char *hostname_assignment) {
     (void) free(hostname);
 }
 
-void
+int
 generate_uri_information(char *uri) {
     char *current_path, *last, *uri_dup, *ptr;
     int  index, retrived_file_name, count, length;
     struct stat *sb;
 
     if ((current_path = malloc(PATH_MAX)) == NULL) {
-        exit(1);
+        return 1;
     }
 
     if ((sb = malloc(sizeof (struct stat))) == NULL) {
-        exit(1);
+        return 1;
     }
 
     if ((uri_dup = strdup(uri)) == NULL) {
-        exit(1);
+        return 1;
     }
 
     current_path[0] = '\0'; 
@@ -310,7 +321,7 @@ generate_uri_information(char *uri) {
         if (count > 1) {
             if (strcat(current_path, ptr) == NULL) {
                 fprintf(stderr, "error: %s\n", strerror(errno));
-                exit(1);
+                return 1;
             }
         } else {
             length = strlen(ptr);
@@ -319,7 +330,7 @@ generate_uri_information(char *uri) {
                     if (strlen(current_path) > 0) {
                         if (stat(current_path, sb) != 0) {
                             fprintf(stderr, "error: %s %s\n", strerror(errno), current_path);
-                            exit(1);
+                            return -1;
                         }
 
                         if (S_ISREG(sb->st_mode)) {
@@ -327,33 +338,37 @@ generate_uri_information(char *uri) {
                             
                             if ((path = strdup(current_path)) == NULL) {
                                 fprintf(stderr, "error: %s %s\n", strerror(errno), current_path);
-                                exit(1);
+                                return 1;
                             }
 
                             (void) bzero(current_path, strlen(current_path));
                         } 
                     } 
                 }
-                append_char(current_path, ptr[index]);
+                if (append_char(current_path, ptr[index]) != 0) {
+                    return 1;
+                }
             }
 
             if (strlen(current_path) > 0) {
                 if (retrived_file_name == 0) {
                     if (stat(current_path, sb) != 0) {
                         fprintf(stderr, "error: %s %s\n", strerror(errno), current_path);
-                        exit(1);
+                        return -1; 
                     }
 
                     if (S_ISREG(sb->st_mode)) {
                         if ((path = strdup(current_path)) == NULL) {
                             fprintf(stderr, "error: %s %s\n", strerror(errno), current_path);
-                            exit(1);
+                            return 1;
                         }
+                    } else {
+                        return -1;
                     }
                 } else {
                     if ((path_info = strdup(current_path)) == NULL) {
                         fprintf(stderr, "error: %s %s\n", strerror(errno), current_path);
-                        exit(1);
+                        return 1;
                     }
                 }
 
@@ -367,19 +382,21 @@ generate_uri_information(char *uri) {
     if (count > 1 && strlen(current_path) > 0) {
         if ((query_string = strdup(current_path)) == NULL) {
             fprintf(stderr, "error: %s %s\n", strerror(errno), current_path);
-            exit(1);
+            return 1;
         }
     }
 
     (void) free(current_path);
     (void) free(sb);
+
+    return 0;
 }
 
-void
+int
 append_char(char *string, char character) {
     char *temp;
     if ((temp = malloc(2)) == NULL) {
-         exit(1);
+         return 1;
     }
                 
     temp[0] = character;
@@ -387,18 +404,21 @@ append_char(char *string, char character) {
 
     if (strcat(string, temp) == NULL) {
         fprintf(stderr, "error: %s\n", strerror(errno));
-        exit(1);
+        return 1;
     }
 
     (void) free(temp);
+
+    return 0;
 }
 
-void
+int
 convert_int_to_string(int number, char *str) {
     if (sprintf(str, "%d", number) < 0) {
         fprintf(stderr, "error: %s\n", strerror(errno));
-        exit(1);
+        return 1;
     }
+    return 0;
 }
 
 unsigned int
