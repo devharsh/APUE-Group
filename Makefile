@@ -24,5 +24,8 @@ bbcp.o: bbcp.c bbcp.h
 cgi.o: cgi.c network.h
 	$(CC) $(CFLAGS) -c cgi.c
 
+debug:
+	$(CC) -o $(TARGET) $(TARGET).c helper.c network.c bbcp.c cgi.c
+
 clean:
 	$(RM) $(TARGET) *.o 

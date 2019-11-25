@@ -54,6 +54,7 @@ struct request {
 */
 
 struct response {
+    int status;
     char *date; 
     char *server; 
     char *last_modified; 
@@ -74,7 +75,7 @@ FILE* fp;
 int     msgsock;
 int     open_connection(struct sockaddr *server, struct server_information);
 int     (*compar) (const FTSENT **, const FTSENT **);
-int     handle_child_request();
+int     handle_child_request(struct server_information server_info);
 void    handle_child_process(__attribute__((unused)) int signal);
 int     add_line_to_request(char *request, char *line, unsigned int buffersize);
 
@@ -88,11 +89,11 @@ int sortLexographical(const FTSENT **fileEntryPointer, const FTSENT **fileEntryP
 void generate_html(char* data);
 void append_char(char *string, char character);
 void generate_uri_information(char *uri);
-int set_environment(struct request *req, struct server_information server_info);
-char * get_hostname();
-void set_env(char *key, char *value);
+char** set_environment(struct request *req, struct server_information server_info, char **environment);
+void get_hostname(char *hostname_assignment);
+char*   get_env_string(char *key, char *value);
 unsigned int get_number_of_digits(int number);
-char * convert_int_to_string(int number);
+void    convert_int_to_string(int number, char *str);
 bool    is_request_complete(char *line, int *repeat_return);
 bool    parse_first_line(char *line, struct request *req);
 bool    validate_additional_information(char *line, struct request *req);
@@ -102,3 +103,6 @@ int     traverse_files(struct request *req);
 int     sortLexographical(const FTSENT **fileEntryPointer, const FTSENT **fileEntryPointerTwo);
 char*   generate_error_contents(int e_no);
 char*   prepare_listing_table(char* data);
+void    generate_error_response(struct response *res, struct server_information info, int status, char *error);
+void    generate_response(struct response *res, struct server_information info, char *output, char *error);
+int     cgi_request(struct request *req, struct response *res, struct server_information server_info);

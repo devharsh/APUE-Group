@@ -5,39 +5,41 @@ char *path;
 char *query_string;
 
 int
-cgi_request(struct request *req,__attribute__((unused)) struct response *res, struct server_information server_info) {
+cgi_request(struct request *req, struct response *res, struct server_information server_info) {
     int output[2], error[2];
     char *output_buffer, *error_buffer;
     char *output_store, *error_store;
     int content;
+    char *environment[12]; 
+    char *arg[1];
 
     pid_t child;
 
     if ((output_buffer = malloc(BUFFERSIZE)) == NULL || 
-        (error_buffer = malloc(BUFFERSIZE))) {
-        fprintf(stdout, "Could not allocate memory: %s\n", strerror(errno));
-        generate_error_response(res, info, 500, "Could not allocate memory");
+        (error_buffer = malloc(BUFFERSIZE)) == NULL) {
+        fprintf(stdout, "Could not allocate memory 1: %s\n", strerror(errno));
+        generate_error_response(res, server_info, 500, "Could not allocate memory");
         return 1;
     }
 
     if (pipe(output) < 0 || pipe(error) < 0) {
         fprintf(stdout, "Could not generate output: %s \n", strerror(errno));
-        generate_error_response(res, info, 500, "Could not allocate memory");
+        generate_error_response(res, server_info, 500, "Could not allocate memory");
         return 1;
     }
 
     if ((child = fork()) < 0) {
         fprintf(stderr, "Could not fork a new process: %s \n", strerror(errno));
-        generate_error_response(res, info, 500, "Internal Server Error");
+        generate_error_response(res, server_info, 500, "Internal Server Error");
         return 1;
     } else if (child == 0) {
         (void) close(output[0]);
         (void) close(error[0]);
 
-        if (output[1] != STDOUT_FILENO) {
+       if (output[1] != STDOUT_FILENO) {
             if (dup2(output[1], STDOUT_FILENO) != STDOUT_FILENO) {
                 fprintf(stderr, "Could not duplicate fd: %s \n", strerror(errno));
-                generate_error_response(res, info, 500, "Internal Server Error");
+                generate_error_response(res, server_info, 500, "Internal Server Error");
                 return 1;
             }
         }
@@ -45,14 +47,19 @@ cgi_request(struct request *req,__attribute__((unused)) struct response *res, st
         if (error[1] != STDERR_FILENO) {
             if (dup2(error[1], STDERR_FILENO) != STDERR_FILENO) {
                 fprintf(stderr, "Could not duplicate fd: %s \n", strerror(errno));
-                generate_error_response(res, info, 500, "Internal Server Error");
+                generate_error_response(res, server_info, 500, "Internal Server Error");
                 return 1;
             }
         }
 
-        (void) set_environment(req, server_info);
+        if ((set_environment(req, server_info, environment)) == NULL) {
+            generate_error_response(res, server_info, 500, "Internal Server Error");
+            return 1;
+        }
 
-        (void) execl(path, (char *) 0);
+        arg[0] = '\0';
+        
+        (void) execvpe(path, arg, environment);
         return 1;
 
     } else {
@@ -64,14 +71,14 @@ cgi_request(struct request *req,__attribute__((unused)) struct response *res, st
             (output_store = malloc(BUFFERSIZE)) == NULL  ||
             (error_store = malloc(BUFFERSIZE)) == NULL) {
             fprintf(stderr, "Could not allocate space: %s \n", strerror(errno));
-            generate_error_response(res, info, 500, "Internal Server Error");
+            generate_error_response(res, server_info, 500, "Internal Server Error");
             return 1;
         }
 
         while ((content = read(output[0], output_store, BUFFERSIZE)) > 0) {
             if (strlcat(output_buffer, output_store, BUFFERSIZE) > BUFFERSIZE) {
                 fprintf(stderr, "Could not allocate space: %s \n", strerror(errno));
-                generate_error_response(res, info, 500, "Internal Server Error");
+                generate_error_response(res, server_info, 500, "Internal Server Error");
                 return 1;
             }
         }
@@ -79,10 +86,12 @@ cgi_request(struct request *req,__attribute__((unused)) struct response *res, st
         while ((content = read(error[0], error_store, BUFFERSIZE)) > 0) {
            if (strlcat(output_buffer, output_store, BUFFERSIZE) > BUFFERSIZE) {
                 fprintf(stderr, "Could not allocate space: %s \n", strerror(errno));
-                generate_error_response(res, info, 500, "Internal Server Error");
+                generate_error_response(res, server_info, 500, "Internal Server Error");
                 return 1;
            }
         }
+
+        generate_response(res, server_info, output_buffer, error_buffer);
 
         (void) close(output[0]);
         (void) close(error[0]);
@@ -126,7 +135,7 @@ generate_response(struct response *res, struct server_information info, char *ou
             }
             generate_error_response(res, info, 500, error_dup);
         } else {
-            generate_error_response(res, info, 500, "Something went wrong");
+            generate_error_response(res, info, 500, "Internal Server Error 1");
         }
         return;
     }    
@@ -139,7 +148,7 @@ generate_error_response(struct response *res, struct server_information info, in
     res->content_type = "text/html";
     res->content_length = strlen(error);
     res->server = info.server_name;
-    // Add date
+    /* Add date */
 }
 
 int
@@ -150,69 +159,127 @@ is_valid_uri(char *uri) {
     return true;
 }
 
-int
-set_environment(struct request *req, struct server_information server_info) {
-    char *hostname, *port;
+char **
+set_environment(struct request *req, struct server_information server_info, char **environment) {
+    char *hostname, *port, *env_path;
+    int length;
+    int env_index = 0;
+    
     /*
     * PATH_TRANSLATED - request
     */
+   if ((hostname = malloc(_POSIX_HOST_NAME_MAX)) == NULL) {
+        fprintf(stderr, "Could not allocate memory 7: %s\n", strerror(errno));
+        return NULL;
+    }
 
-    hostname = get_hostname();
-    port = convert_int_to_string(server_info.port);
+    length = get_number_of_digits(server_info.port);
+
+    if ((port = malloc(length + 1)) == NULL) {
+        fprintf(stderr, "error: %s\n", strerror(errno));
+        return NULL;
+    }
+
+    get_hostname(hostname);
+    convert_int_to_string(server_info.port, port);
 
     (void) generate_uri_information(req->uri);
 
-    (void) set_env("AUTH_TYPE", "Basic");
-    (void) set_env("GATEWAY_INTERFACE", "CGI/1.1");
-    (void) set_env("REQUEST_METHOD", req->method);
-    (void) set_env("SERVER_PROTOCOL", "HTTP/1.0");
-    (void) set_env("SERVER_SOFTWARE", server_info.server_name);
-    (void) set_env("SERVER_PORT", port);
-    (void) set_env("SERVER_NAME", hostname);
+    environment[env_index++] = "AUTH_TYPE=Basic";
+    environment[env_index++] = "GATEWAY_INTERFACE=CGI/1.1";
+    environment[env_index++] = "SERVER_PROTOCOL=HTTP/1.0";
+
+    if ((environment[env_index++] = 
+            get_env_string("SERVER_SOFTWARE=", server_info.server_name)) == NULL) {
+        return NULL;
+    }
+
+    if ((environment[env_index++] = 
+            get_env_string("SERVER_PORT=", port)) == NULL) {
+        return NULL;
+    }
+
+    if ((environment[env_index++] = 
+            get_env_string("SERVER_NAME=", hostname)) == NULL) {
+        return NULL;
+    }
     
     if (path_info != NULL) {
-        (void) set_env("PATH_INFO", path_info);
+        if ((environment[env_index++] = 
+                get_env_string("PATH_INFO=", path_info)) == NULL) {
+            return NULL;
+        }
     }
 
     if (query_string != NULL) {
-        (void) set_env("QUERY_STRING", query_string);
+        if ((environment[env_index++] = 
+                get_env_string("QUERY_STRING=", query_string)) == NULL) {
+            return NULL;
+        }
     }
+
+    if ((env_path = getenv("PATH")) != NULL) {
+        if ((environment[env_index++] = 
+                get_env_string("PATH=", env_path)) == NULL) {
+            return NULL;
+        }
+    }
+
+    if ((environment[env_index++] = 
+            get_env_string("SCRIPT_NAME=", path)) == NULL) {
+        return NULL;
+    }
+
+    environment[env_index++] = '\0';
     
-    (void) set_env("SCRIPT_NAME", path);
-
-    return 1;
-}
-
-void
-set_env(char *key, char *value) {
-    if (setenv(key, value, 1) == -1) {
-        fprintf(stderr, "Could not get allocate memory: %s \n", strerror(errno));
-        /*todo send response*/
-    }
+    return environment;
 }
 
 char *
-get_hostname() {
-    char *hostname, *hostname_assignment;
+get_env_string(char *key, char *value) {
+    char *buffer, *result;
+    size_t size;
 
-    if ((hostname = malloc(_POSIX_HOST_NAME_MAX)) == NULL) {
+    size = strlen(key) + strlen(value) + 1;
+
+    if ((buffer = malloc(size)) == NULL) {
         fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
         return NULL;
     }
 
+    if (snprintf(buffer, size, "%s%s", key, value) < 0) {
+        fprintf(stderr, "Could not copy string: %s\n", strerror(errno));
+        return NULL;
+    }
+
+    if ((result = strdup(buffer)) == NULL) {
+        fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+        return NULL;
+    }
+
+    return result;
+}
+
+void
+get_hostname(char *hostname_assignment) {
+    char *hostname;
+
+    if ((hostname = malloc(_POSIX_HOST_NAME_MAX)) == NULL) {
+        fprintf(stderr, "Could not allocate memory 7: %s\n", strerror(errno));
+        return;
+    }
+
     if (gethostname(hostname, _POSIX_HOST_NAME_MAX) != 0) {
         fprintf(stderr, "Could not get hostname from server: %s \n", strerror(errno));
-        return NULL;
+        return;
     }
 
     if ((hostname_assignment = strdup(hostname)) == NULL) {
-        fprintf(stderr, "Could not get allocate memory: %s \n", strerror(errno));
-        return NULL;
+        fprintf(stderr, "Could not get allocate memory 8: %s \n", strerror(errno));
+        return;
     }
 
     (void) free(hostname);
-
-    return hostname_assignment;
 }
 
 void
@@ -326,25 +393,12 @@ append_char(char *string, char character) {
     (void) free(temp);
 }
 
-char *
-convert_int_to_string(int number) {
-    int length;
-    char *str;
-
-    length = get_number_of_digits(number);
-
-    if ((str = malloc(length + 1)) == NULL) {
-        fprintf(stderr, "error: %s\n", strerror(errno));
-        exit(1);
-    }
-
+void
+convert_int_to_string(int number, char *str) {
     if (sprintf(str, "%d", number) < 0) {
         fprintf(stderr, "error: %s\n", strerror(errno));
         exit(1);
     }
-
-    /*TODO using strdup*/
-    return str;
 }
 
 unsigned int
