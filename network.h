@@ -90,7 +90,6 @@ void generate_html(char* data);
 int append_char(char *string, char character);
 int generate_uri_information(char *uri);
 char** set_environment(struct request *req, struct response *res, struct server_information server_info, char **environment);
-void get_hostname(char *hostname_assignment);
 char*   get_env_string(char *key, char *value);
 unsigned int get_number_of_digits(int number);
 int    convert_int_to_string(int number, char *str);

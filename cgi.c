@@ -184,7 +184,11 @@ set_environment(struct request *req, struct response *res, struct server_informa
         return NULL;
     }
 
-    get_hostname(hostname);
+    if (gethostname(hostname, _POSIX_HOST_NAME_MAX) != 0) {
+        fprintf(stderr, "Could not get hostname from server: %s \n", strerror(errno));
+        return NULL;
+    }
+
     if (convert_int_to_string(server_info.port, port) != 0) {
         return NULL;
     }
@@ -269,28 +273,6 @@ get_env_string(char *key, char *value) {
     }
 
     return result;
-}
-
-void
-get_hostname(char *hostname_assignment) {
-    char *hostname;
-
-    if ((hostname = malloc(_POSIX_HOST_NAME_MAX)) == NULL) {
-        fprintf(stderr, "Could not allocate memory 7: %s\n", strerror(errno));
-        return;
-    }
-
-    if (gethostname(hostname, _POSIX_HOST_NAME_MAX) != 0) {
-        fprintf(stderr, "Could not get hostname from server: %s \n", strerror(errno));
-        return;
-    }
-
-    if ((hostname_assignment = strdup(hostname)) == NULL) {
-        fprintf(stderr, "Could not get allocate memory 8: %s \n", strerror(errno));
-        return;
-    }
-
-    (void) free(hostname);
 }
 
 int
