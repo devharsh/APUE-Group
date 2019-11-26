@@ -22,22 +22,35 @@ handle_child_process(__attribute__((unused)) int signal) {
  **/
 int
 open_connection(struct sockaddr *server, struct server_information server_info) {
-	int sock;
+	int sock, off;
 	pid_t pid;
 	socklen_t length;
 	struct sockaddr client;
 
-	if (server_info.protocol == 6) {
-		sock = socket(AF_INET6, SOCK_STREAM, 0);
-		length = sizeof(struct sockaddr_in6);
-	} else {
+	off = 0;
+
+	if (server_info.protocol == 4) {
 		sock = socket(AF_INET, SOCK_STREAM, 0);
 		length = sizeof(struct sockaddr_in);
+	} else {
+		sock = socket(AF_INET6, SOCK_STREAM, 0);
+		length = sizeof(struct sockaddr_in6);
 	}
 	
 	if (sock < 0) {
 		fprintf(stderr, "Could not open socket: %s \n", strerror(errno));
 		return 1;
+	}
+
+	/*
+	* This condition is for us to determine if we need to listen on all ipv4 and ipv6 addresses
+	* 10 = combination of 4 and 6. This is not a protocol, just for logic purposes.
+	*/
+	if (server_info.protocol == 10) {
+		if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &off, sizeof(off)) != 0) {
+			fprintf(stderr, "Could not change settings for socket: %s\n", strerror(errno));
+			return 1;
+		}
 	}
 	
 	if (bind(sock, server, length) != 0) {
@@ -153,8 +166,6 @@ handle_child_request(struct server_information server_info) {
 			}
 		}
 	} while (!is_request_complete(read_buf, repeat_return));
-
-	printf("input %s \n", raw_request);
 
 	(void) alarm(0);
 	(void) free(raw_request);

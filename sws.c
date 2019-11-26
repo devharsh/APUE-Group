@@ -81,11 +81,11 @@ validate_address(char *input_address, int port) {
 	server_info.port = htons(port); 
 
 	if (input_address == NULL) {
-		server_info.protocol = 4;
-		socket_address_ipv4.sin_family = AF_INET;
-		socket_address_ipv4.sin_addr.s_addr = INADDR_ANY;
-		socket_address_ipv4.sin_port = htons(port);
-		return (struct sockaddr*) &socket_address_ipv4;
+		server_info.protocol = 10;
+		socket_address_ipv6.sin6_family = AF_INET6;
+		socket_address_ipv6.sin6_addr = in6addr_any;
+		socket_address_ipv6.sin6_port = htons(port);
+		return (struct sockaddr*) &socket_address_ipv6;
 	}
 
 	if (inet_pton(AF_INET, input_address, &(socket_address_ipv4.sin_addr)) == 1) {
