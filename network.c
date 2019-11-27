@@ -167,6 +167,12 @@ handle_child_request(struct server_information server_info) {
 		}
 	} while (!is_request_complete(read_buf, repeat_return));
 
+	printf("input %s \n", raw_request);
+	
+	cgi_request(req, res, server_info);
+
+	write_response_to_socket(req, res);
+
 	(void) alarm(0);
 	(void) free(raw_request);
 	(void) free(req);
@@ -223,6 +229,7 @@ write_response_to_socket(struct request *req, struct response *res) {
 	(void) write_to_socket("Server: ", res->server);
 
 	if (strcmp(req->method, "GET") == 0) {
+		(void) write(msgsock, "\n", 1);
 		(void) write_to_socket(NULL, res->data);
 	}
 
@@ -261,7 +268,6 @@ write_to_socket(char *key, char *value) {
 		exit(1);
 	}
 
-	printf("what: %s\n", final_value);
 	left = strlen(final_value);
 
 	while (left > 0) {
@@ -437,5 +443,4 @@ validate_date(char* date_str, struct request *req) {
 
 /*
 * TODO: add date validation
-* TODO: add response common code
 */
