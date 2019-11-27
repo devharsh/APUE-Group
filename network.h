@@ -105,3 +105,5 @@ char*   prepare_listing_table(char* data);
 void    generate_error_response(struct response *res, struct server_information info, int status, char *error);
 void    generate_response(struct response *res, struct server_information info, char *output, char *error);
 int     cgi_request(struct request *req, struct response *res, struct server_information server_info);
+void    write_response_to_socket(struct request *req, struct response *res);
+void    write_to_socket(char *key, char *value);

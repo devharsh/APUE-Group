@@ -175,6 +175,104 @@ handle_child_request(struct server_information server_info) {
 	return 0;
 }
 
+void
+write_response_to_socket(struct request *req, struct response *res) {
+	time_t current_time;
+  	struct tm * current_time_struct;
+	char time_str[50];
+	char status[3];
+	char *content_length;
+	int length;
+
+	length = get_number_of_digits(res->content_length);
+
+	if ((content_length = malloc(length + 1)) == NULL) {
+		fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	if (sprintf(status, "%d", res->status) < 0) {
+        fprintf(stderr, "error: %s\n", strerror(errno));
+		exit(1);
+    }
+
+	if (sprintf(content_length, "%d", res->content_length) < 0) {
+        fprintf(stderr, "error: %s\n", strerror(errno));
+		exit(1);
+    }
+	
+	(void) write_to_socket("HTTP/1.0 ", status);
+	(void) write_to_socket("Content-Length: ", content_length);
+
+	if (res->content_type != NULL) {
+		(void) write_to_socket("Content-Type: ", res->content_type);
+	}
+	
+  	(void) time(&current_time);
+  	current_time_struct = gmtime(&current_time);
+
+	/*Tue, 26 Nov 2019 22:51:25 GMT*/
+	(void) strftime(time_str, sizeof(time_str), "%a, %d %b %Y %H:%M:%S %Z", current_time_struct);
+	
+	(void) write_to_socket("Date: " , time_str);
+	
+	if (res->last_modified != NULL) {
+		(void) write_to_socket("Last-Modified: " , res->last_modified);
+	}
+	
+	(void) write_to_socket("Server: ", res->server);
+
+	if (strcmp(req->method, "GET") == 0) {
+		(void) write_to_socket(NULL, res->data);
+	}
+
+	(void) free(content_length);
+}
+
+void
+write_to_socket(char *key, char *value) {
+	int left, transmitted;
+	int malloc_size;
+	char *final_value;
+
+	malloc_size = strlen(value) + 2;
+
+	if (key != NULL) {
+		malloc_size += strlen(key);
+	}
+
+	if ((final_value = malloc(malloc_size)) == NULL) {
+		exit(1);
+	}
+
+	final_value[0] = '\0'; 
+
+	if (key != NULL) {
+		if (strcat(final_value, key) == NULL) {
+			exit(1);
+		}
+	}
+
+	if (strcat(final_value, value) == NULL) {
+		exit(1);
+	}
+
+	if (strcat(final_value, "\n") == NULL) {
+		exit(1);
+	}
+
+	printf("what: %s\n", final_value);
+	left = strlen(final_value);
+
+	while (left > 0) {
+		if ((transmitted = write(msgsock, final_value, left)) < 0) {
+			exit(1);
+		}
+		final_value += transmitted;
+		left -= transmitted;
+	}
+}
+
 int
 add_line_to_request(char *request, char *line, unsigned int buffersize) {
 	if (strlcat(request, line, buffersize) > buffersize) {
