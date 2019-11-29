@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 int fts_options = FTS_COMFOLLOW | FTS_NOCHDIR | FTS_PHYSICAL;
 int has_index = 0;
@@ -22,6 +23,9 @@ name_compare(const FTSENT ** first, const FTSENT ** second);
 
 void
 directory_indexing(char* path);
+
+char*
+get_time_now();
 
 const char*
 get_mime_type(char* path);

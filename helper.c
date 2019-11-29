@@ -1,5 +1,12 @@
 #include "helper.h"
 
+char*
+get_time_now() {
+	time_t now;
+	time(&now);
+	return ctime(&now);
+}
+
 const char*
 get_mime_type(char* path) {
 	magic_t magic;
