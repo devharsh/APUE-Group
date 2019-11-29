@@ -2,8 +2,8 @@
 
 int
 main(int argc, char* argv[]) {	
-	/* int fd = 0;*/
-	int is_chdir;
+	/* int fd = 0;
+	int is_chdir;*/
 	int opt;
 	int port;
 	/*int is_close = 1;*/ 
