@@ -1,7 +1,8 @@
 #include "bbcp.h"
 
+
 int
-fileCopy(char* source, char* destination) {
+fileCopy(struct response* res, struct server_information server_info, char* source, char* destination) {
 	int inputFD, outputFD;
 	char filebuf[BUF_SIZE];
 	char target_path[BUF_LIMIT];
@@ -10,6 +11,7 @@ fileCopy(char* source, char* destination) {
 
 	if (strcmp(source, destination) == 0) {
 		fprintf(stderr, "both files are same (no action)\n");
+		generate_error_response(res, server_info, 500, "Internal Server Error");
 		exit(1);
 	}
 
@@ -19,12 +21,14 @@ fileCopy(char* source, char* destination) {
 		target_path[len] = '\0';
 		if (strcmp(source, target_path) == 0) {
 			fprintf(stderr, "both files are same (no action)\n");
+			generate_error_response(res, server_info, 500, "Internal Server Error");
 			exit(1);
 		}
 	}
 	
 	if (access(source, R_OK) != 0) {
 		fprintf(stderr, "%s is not readable (access denied)\n", source);
+		generate_error_response(res, server_info, 500, "Internal Server Error");
 		exit(1);
 	}
 	
@@ -32,6 +36,7 @@ fileCopy(char* source, char* destination) {
 
 	if(!S_ISREG(buf.st_mode)) {
 		fprintf(stderr, "Not a valid file: %s\n", source);
+		generate_error_response(res, server_info, 500, "Internal Server Error");
 		exit(1);
 	}
 	
@@ -39,11 +44,13 @@ fileCopy(char* source, char* destination) {
 
 	if(inputFD == -1) {
 		fprintf(stderr, "Error opening file: %s\n", source);
+		generate_error_response(res, server_info, 500, "Internal Server Error");
 		exit(1);
 	}
 
 	if(access((dirname(strdup(destination))), W_OK) != 0) {
 		fprintf(stderr, "%s is not writable(access denied)", dirname(strdup(destination)));
+		generate_error_response(res, server_info, 500, "Internal Server Error");
 		exit(1);
 	}
 
@@ -60,28 +67,33 @@ fileCopy(char* source, char* destination) {
 	
 	if(outputFD == -1) {
 		fprintf(stderr, "Error opening file:%s\n", destination);
+		generate_error_response(res, server_info, 500, "Internal Server Error");
 		exit(1);
 	}
 
 	while((number = read(inputFD, filebuf, BUF_SIZE)) > 0) {
 		if(write(outputFD, filebuf, number) != number) {
 			fprintf(stderr, "Error writing file\n");
+			generate_error_response(res, server_info, 500, "Internal Server Error");
 			exit(1);
 		}
 	}
 
 	if(number == -1) {
 		fprintf(stderr, "Error writing file\n");
+		generate_error_response(res, server_info, 500, "Internal Server Error");
 		exit(1);
 	}
 
 	if(close(inputFD) == -1) {
 		fprintf(stderr, "Error closing file:%s\n", source);
+		generate_error_response(res, server_info, 500, "Internal Server Error");
 		exit(1);
 	}
 
 	if(close(outputFD) == -1) {
 		fprintf(stderr, "Error closing file:%s\n", destination);
+		generate_error_response(res, server_info, 500, "Internal Server Error");
 		exit(1);
 	}
 

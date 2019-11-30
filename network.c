@@ -22,22 +22,35 @@ handle_child_process(__attribute__((unused)) int signal) {
  **/
 int
 open_connection(struct sockaddr *server, struct server_information server_info) {
-	int sock;
+	int sock, off;
 	pid_t pid;
 	socklen_t length;
 	struct sockaddr client;
 
-	if (server_info.protocol == 6) {
-		sock = socket(AF_INET6, SOCK_STREAM, 0);
-		length = sizeof(struct sockaddr_in6);
-	} else {
+	off = 0;
+
+	if (server_info.protocol == 4) {
 		sock = socket(AF_INET, SOCK_STREAM, 0);
 		length = sizeof(struct sockaddr_in);
+	} else {
+		sock = socket(AF_INET6, SOCK_STREAM, 0);
+		length = sizeof(struct sockaddr_in6);
 	}
 	
 	if (sock < 0) {
 		fprintf(stderr, "Could not open socket: %s \n", strerror(errno));
 		return 1;
+	}
+
+	/*
+	* This condition is for us to determine if we need to listen on all ipv4 and ipv6 addresses
+	* 10 = combination of 4 and 6. This is not a protocol, just for logic purposes.
+	*/
+	if (server_info.protocol == 10) {
+		if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &off, sizeof(off)) != 0) {
+			fprintf(stderr, "Could not change settings for socket: %s\n", strerror(errno));
+			return 1;
+		}
 	}
 	
 	if (bind(sock, server, length) != 0) {
@@ -71,7 +84,7 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
 			fprintf(stderr, "Unable to fork process: %s \n", strerror(errno));
 			return 1;
 		} else if (pid == 0) {
-			int result = handle_child_request();
+			int result = handle_child_request(server_info);
 			return result;
 		} else {
 			(void) close(msgsock);
@@ -87,7 +100,7 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
  * 
 **/
 int
-handle_child_request() {
+handle_child_request(struct server_information server_info) {
 	int  			init = false;
 	int  			is_first_line = 1;
 	int  			result = 0;
@@ -97,9 +110,12 @@ handle_child_request() {
 	char 			*raw_request;
 	struct request 	*req;
 	char*           line_dup;
+	struct response *res;
+
 
 	if ((raw_request = malloc(BUFFERSIZE)) == NULL ||
-		(req = malloc(sizeof(struct request))) == NULL) {
+		(req = malloc(sizeof(struct request))) == NULL ||
+		(res = malloc(sizeof(struct response))) == NULL) {
 		fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
 		return 1;
 	}
@@ -152,8 +168,10 @@ handle_child_request() {
 	} while (!is_request_complete(read_buf, repeat_return));
 
 	printf("input %s \n", raw_request);
+	
+	cgi_request(req, res, server_info);
 
-	traverse_files(req);
+	write_response_to_socket(req, res);
 
 	(void) alarm(0);
 	(void) free(raw_request);
@@ -161,6 +179,104 @@ handle_child_request() {
 	(void) close(msgsock);
 
 	return 0;
+}
+
+void
+write_response_to_socket(struct request *req, struct response *res) {
+	time_t current_time;
+  	struct tm * current_time_struct;
+	char time_str[50];
+	char status[3];
+	char *content_length;
+	int length;
+
+	length = get_number_of_digits(res->content_length);
+
+	if ((content_length = malloc(length + 1)) == NULL) {
+		fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	if (sprintf(status, "%d", res->status) < 0) {
+        fprintf(stderr, "error: %s\n", strerror(errno));
+		exit(1);
+    }
+
+	if (sprintf(content_length, "%d", res->content_length) < 0) {
+        fprintf(stderr, "error: %s\n", strerror(errno));
+		exit(1);
+    }
+	
+	(void) write_to_socket("HTTP/1.0 ", status);
+	(void) write_to_socket("Content-Length: ", content_length);
+
+	if (res->content_type != NULL) {
+		(void) write_to_socket("Content-Type: ", res->content_type);
+	}
+	
+  	(void) time(&current_time);
+  	current_time_struct = gmtime(&current_time);
+
+	/*Tue, 26 Nov 2019 22:51:25 GMT*/
+	(void) strftime(time_str, sizeof(time_str), "%a, %d %b %Y %H:%M:%S %Z", current_time_struct);
+	
+	(void) write_to_socket("Date: " , time_str);
+	
+	if (res->last_modified != NULL) {
+		(void) write_to_socket("Last-Modified: " , res->last_modified);
+	}
+	
+	(void) write_to_socket("Server: ", res->server);
+
+	if (strcmp(req->method, "GET") == 0) {
+		(void) write(msgsock, "\n", 1);
+		(void) write_to_socket(NULL, res->data);
+	}
+
+	(void) free(content_length);
+}
+
+void
+write_to_socket(char *key, char *value) {
+	int left, transmitted;
+	int malloc_size;
+	char *final_value;
+
+	malloc_size = strlen(value) + 2;
+
+	if (key != NULL) {
+		malloc_size += strlen(key);
+	}
+
+	if ((final_value = malloc(malloc_size)) == NULL) {
+		exit(1);
+	}
+
+	final_value[0] = '\0'; 
+
+	if (key != NULL) {
+		if (strcat(final_value, key) == NULL) {
+			exit(1);
+		}
+	}
+
+	if (strcat(final_value, value) == NULL) {
+		exit(1);
+	}
+
+	if (strcat(final_value, "\n") == NULL) {
+		exit(1);
+	}
+
+	left = strlen(final_value);
+
+	while (left > 0) {
+		if ((transmitted = write(msgsock, final_value, left)) < 0) {
+			exit(1);
+		}
+		final_value += transmitted;
+		left -= transmitted;
+	}
 }
 
 int
@@ -327,5 +443,4 @@ validate_date(char* date_str, struct request *req) {
 
 /*
 * TODO: add date validation
-* TODO: add response common code
 */
