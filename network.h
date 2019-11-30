@@ -52,6 +52,7 @@ struct request {
 */
 
 struct response {
+    int  status;
     char *date; 
     char *server; 
     char *last_modified; 
@@ -86,3 +87,4 @@ int     sortLexographical(const FTSENT **fileEntryPointer, const FTSENT **fileEn
 char*   generate_html(char* data);
 char*   generate_error_contents(int e_no);
 char*   prepare_listing_table(char* data);
+void    prepare_response_directorylisting(char* html, int status);
