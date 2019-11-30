@@ -86,7 +86,7 @@ bool validate_date(char* date_str, struct request *req);
 bool validate_tm(struct tm *time_ptr);
 int traverse_files(struct request *req);
 int sortLexographical(const FTSENT **fileEntryPointer, const FTSENT **fileEntryPointerTwo);
-void generate_html(char* data);
+char* generate_html(char* data);
 int append_char(char *string, char character);
 int generate_uri_information(char *uri);
 char** set_environment(struct request *req, struct response *res, struct server_information server_info, char **environment);

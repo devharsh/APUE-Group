@@ -18,6 +18,7 @@ traverse_files(struct request *req)
     bool    index_file_found = false;
     char    *html;
     bool    err_flag = false;
+    int     status;
 
     compar = &sortLexographical;
     options = FTS_PHYSICAL | FTS_NOCHDIR;
@@ -93,16 +94,19 @@ traverse_files(struct request *req)
         if(err_flag) {
             /* URI/Permissions are invalid - generating html for error */
             /* do something if necessary */
+            status = 403;
         } else {
             /* URI/Permissions are valid - generating html for directory listing */
+            status = 200;
             contents = prepare_listing_table(contents);
         }
         html = generate_html(contents);
-        printf("%s", html);
     }
     
     (void) free(arguments);
     (void) free(contents);
+
+    prepare_response_directorylisting(html, status);
 
     return 0;
 }
@@ -228,4 +232,22 @@ sortLexographical(const FTSENT **fileEntryPointer, const FTSENT **fileEntryPoint
     const FTSENT *file1 = *fileEntryPointer;
     const FTSENT *file2 = *fileEntryPointerTwo;
     return strcmp(file1->fts_name, file2->fts_name);
+}
+
+/**
+ * This function generates reponse object for all kind of senarios
+ * */
+void
+prepare_response_directorylisting(char* html, int status) {
+    struct response *res;
+    
+    res->data = html;
+    res->content_type = "text/html";
+    res->content_length = strlen(html);
+    res->status = status;
+
+    printf("%s\n", res->data);
+    printf("content-length : %d\n", res->content_length);
+    printf("content-type : %s\n", res->content_type);
+    printf("status : %d\n", res->status);
 }
