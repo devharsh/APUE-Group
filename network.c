@@ -247,7 +247,7 @@ generate_error_response(struct response *res, struct server_information info, in
 }
 
 void
-write_to_socket(char *key, char *value) {
+write_to_socket(char *key, const char *value) {
 	int left, transmitted;
 	int malloc_size;
 	char *final_value;
