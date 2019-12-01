@@ -23,6 +23,7 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <paths.h>
+#include <libgen.h>
 
 #define TRUE 1
 #define BUFFERSIZE 16384
@@ -82,6 +83,7 @@ struct server_information {
     int     port;
     char    *server_name;
     char    *ip_address;
+    char    *cgi_directory;
 };
 
 FILE* fp;
@@ -118,3 +120,4 @@ void            write_to_socket(char *key, char *value);
 char*           get_user_directroy_ifexists(char* uri);
 int             fileCopy(struct response *res, struct server_information info, char* source, char* destination);
 int             htmlResponse(char* str_html);
+int             process_request(struct request *req, struct response *res, struct server_information info);

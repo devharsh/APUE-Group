@@ -16,6 +16,7 @@ main(int argc, char* argv[]) {
 	
 	server = malloc(sizeof(struct sockaddr));
 	server_info.server_name = "SWS_HTTP/1.0";
+	server_info.cgi_directory = "/cgi-bin";
 
 	while ((opt = getopt(argc, argv,"c:dhi:l:p:")) != -1) {  
         	switch(opt) {

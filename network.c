@@ -26,9 +26,7 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
 	pid_t pid;
 	socklen_t length;
 	struct sockaddr client;
-
-	off = 0;
-
+	
 	if (server_info.protocol == 4) {
 		sock = socket(AF_INET, SOCK_STREAM, 0);
 		length = sizeof(struct sockaddr_in);
@@ -169,7 +167,7 @@ handle_child_request(struct server_information server_info) {
 
 	printf("input %s \n", raw_request);
 	
-	cgi_request(req, res, server_info);
+	process_request(req, res, server_info);
 
 	write_response_to_socket(req, res);
 
@@ -178,6 +176,120 @@ handle_child_request(struct server_information server_info) {
 	(void) free(req);
 	(void) close(msgsock);
 
+	return 0;
+}
+
+int
+process_request(struct request *req, struct response *res, struct server_information info) {
+	char *uri, *ptr, *last, *final_path;
+	char path[PATH_MAX];
+	int index;
+	struct stat *sb;
+
+	 if ((sb = malloc(sizeof (struct stat))) == NULL) {
+        fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+		generate_error_response(res, info, 500, "Internal Server Error");
+		return 1;
+    }
+
+	if ((uri = strdup(req->uri)) == NULL) {
+		fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+		generate_error_response(res, info, 500, "Internal Server Error");
+		return 1;
+	}
+
+	if ((final_path = malloc(PATH_MAX)) == NULL) {
+		fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+		generate_error_response(res, info, 500, "Internal Server Error");
+		return 1;
+	}
+
+	final_path[0] = '\0'; 
+
+	if (realpath(uri, path) == NULL) {
+		fprintf(stderr, "Could not resolve path: %s\n", strerror(errno));
+		generate_error_response(res, info, 500, "Internal Server Error");
+		return 1;
+	}
+
+	if (strncmp(path, "/cgi-bin", 8) == 0) {
+		ptr = strtok_r(uri, "/", &last);
+		index = 0;
+
+		while (ptr != NULL) {
+			if (index == 0) {
+				if (strcat(final_path, info.cgi_directory) == NULL) {
+					fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
+					generate_error_response(res, info, 500, "Internal Server Error");
+					return 1;
+				}
+			} else {
+				if (strcat(final_path, "/") == NULL) {
+					fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
+					generate_error_response(res, info, 500, "Internal Server Error");
+					return 1;
+				}
+
+				if (strcat(final_path, ptr) == NULL) {
+					fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
+					generate_error_response(res, info, 500, "Internal Server Error");
+					return 1;
+				}
+			}
+
+			index++;
+			ptr = strtok_r(NULL, "/", &last);
+		}
+
+		if ((req->uri = strdup(final_path)) == NULL) {
+			fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
+			generate_error_response(res, info, 500, "Internal Server Error");
+			return 1;
+		}
+
+		(void) cgi_request(req, res, info);
+
+	} else {
+		ptr = strtok_r(uri, "?", &last);
+
+		errno = 0;
+		if (realpath(ptr, final_path) == NULL) {
+			fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
+			generate_error_response(res, info, 500, "Internal Server Error");
+			return 1;
+		}
+
+		if (errno != 0) {
+			if (errno == EACCES) {
+				fprintf(stderr, "Permission Denied: %s\n", strerror(errno));
+				generate_error_response(res, info, 403, "Unauthorized Access");
+				return 1;
+			} else if (errno == ENOENT) {
+				fprintf(stderr, "No such file or directory: %s\n", strerror(errno));
+				generate_error_response(res, info, 404, "No such file or directory");
+				return 1;
+			}
+
+			fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
+			generate_error_response(res, info, 500, "Internal Server Error");
+			return 1;
+		}
+
+		if (stat(final_path, sb) != 0) {
+			fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
+			generate_error_response(res, info, 500, "Internal Server Error");
+			return 1;
+		}
+
+		if (S_ISREG(sb->st_mode)) {
+			printf("regular file: %s\n", final_path);
+		} else if (S_ISDIR(sb->st_mode)) {
+			printf("Directory: %s\n", final_path);
+		} else {
+
+		}
+	}
+	
 	return 0;
 }
 
@@ -228,7 +340,7 @@ write_response_to_socket(struct request *req, struct response *res) {
 	
 	(void) write_to_socket("Server: ", res->server);
 
-	if (strcmp(req->method, "GET") == 0) {
+	if (res->status != 200 || strcmp(req->method, "GET") == 0) {
 		(void) write(msgsock, "\n", 1);
 		(void) write_to_socket(NULL, res->data);
 	}
