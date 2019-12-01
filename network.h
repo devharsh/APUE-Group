@@ -26,7 +26,7 @@
 #include <libgen.h>
 
 #define TRUE 1
-#define BUFFERSIZE 16384
+#define BUFFERSIZE 1048576
 #define TIMEOUT 60
 
 /* 1 MB buffer size for copying */
@@ -119,3 +119,4 @@ void            write_response_to_socket(struct request *req, struct response *r
 void            write_to_socket(char *key, const char *value);
 char*           get_user_directroy_ifexists(char* uri);
 int             process_request(struct request *req, struct response *res, struct server_information info);
+int             check_general_errors(struct response *res, struct server_information info);

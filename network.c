@@ -208,9 +208,10 @@ process_request(struct request *req, struct response *res, struct server_informa
 	final_path[0] = '\0'; 
 
 	if (realpath(uri, path) == NULL) {
-		printf("what: %s\n", uri);
-		fprintf(stderr, "Could not resolve path: %s\n", strerror(errno));
-		generate_error_response(res, info, 500, "Internal Server Error");
+		if (check_general_errors(res, info) == 0) {
+			fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
+			generate_error_response(res, info, 500, "Internal Server Error");
+		}
 		return 1;
 	}
 
@@ -256,24 +257,18 @@ process_request(struct request *req, struct response *res, struct server_informa
 
 		errno = 0;
 		if (realpath(ptr, final_path) == NULL) {
-			fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
-			generate_error_response(res, info, 500, "Internal Server Error");
+			if (check_general_errors(res, info) == 0) {
+				fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
+				generate_error_response(res, info, 500, "Internal Server Error");
+			}
 			return 1;
 		}
 
 		if (errno != 0) {
-			if (errno == EACCES) {
-				fprintf(stderr, "Permission Denied: %s\n", strerror(errno));
-				generate_error_response(res, info, 403, "Unauthorized Access");
-				return 1;
-			} else if (errno == ENOENT) {
-				fprintf(stderr, "No such file or directory: %s\n", strerror(errno));
-				generate_error_response(res, info, 404, "No such file or directory");
-				return 1;
+			if (check_general_errors(res, info) == 0) {
+				fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
+				generate_error_response(res, info, 500, "Internal Server Error");
 			}
-
-			fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
-			generate_error_response(res, info, 500, "Internal Server Error");
 			return 1;
 		}
 
@@ -292,6 +287,20 @@ process_request(struct request *req, struct response *res, struct server_informa
 		}
 	}
 	
+	return 0;
+}
+
+int
+check_general_errors(struct response *res, struct server_information info) {
+	if (errno == EACCES) {
+		fprintf(stderr, "Permission Denied: %s\n", strerror(errno));
+		generate_error_response(res, info, 403, "Unauthorized Access");
+		return 1;
+	} else if (errno == ENOENT) {
+		fprintf(stderr, "No such file or directory: %s\n", strerror(errno));
+		generate_error_response(res, info, 404, "No such file or directory");
+		return 1;
+	}
 	return 0;
 }
 
