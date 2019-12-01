@@ -147,16 +147,6 @@ generate_response(struct response *res, struct server_information info, char *ou
     }    
 }
 
-void
-generate_error_response(struct response *res, struct server_information info, int status, char *error) {
-    res->status = status;
-    res->data = error;
-    res->content_type = "text/html";
-    res->content_length = strlen(error);
-    res->server = info.server_name;
-    /* Add date */
-}
-
 int
 is_valid_uri(char *uri) {
     if (strstr(uri, "/../") != NULL) {
@@ -409,13 +399,13 @@ unsigned int
 get_number_of_digits(int number) {
     unsigned int count;
     
-    if(number == 0) {
+    if (number == 0) {
         return 1;
     }
 
     count = 0;
 
-    while(number != 0) {
+    while (number != 0) {
         number = number / 10;
         count++;
     }

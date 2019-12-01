@@ -236,6 +236,16 @@ write_response_to_socket(struct request *req, struct response *res) {
 	(void) free(content_length);
 }
 
+
+void
+generate_error_response(struct response *res, struct server_information info, int status, char *error) {
+    res->status = status;
+    res->data = error;
+    res->content_type = "text/html";
+    res->content_length = strlen(error);
+    res->server = info.server_name;
+}
+
 void
 write_to_socket(char *key, char *value) {
 	int left, transmitted;

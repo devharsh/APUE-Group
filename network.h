@@ -20,10 +20,23 @@
 #include <fts.h>
 #include <limits.h>
 #include <pwd.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <paths.h>
 
 #define TRUE 1
 #define BUFFERSIZE 16384
 #define TIMEOUT 60
+
+/* 1 MB buffer size for copying */
+#ifndef BUF_SIZE
+#define BUF_SIZE 1048576 
+#endif
+
+/* limit for a file name */
+#ifndef BUF_LIMIT
+#define BUF_LIMIT 512
+#endif
 
 struct request {
     char        *method;
@@ -103,3 +116,5 @@ int             cgi_request(struct request *req, struct response *res, struct se
 void            write_response_to_socket(struct request *req, struct response *res);
 void            write_to_socket(char *key, char *value);
 char*           get_user_directroy_ifexists(char* uri);
+int             fileCopy(struct response *res, struct server_information info, char* source, char* destination);
+int             htmlResponse(char* str_html);
