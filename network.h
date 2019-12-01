@@ -118,3 +118,4 @@ void            write_to_socket(char *key, char *value);
 char*           get_user_directroy_ifexists(char* uri);
 int             fileCopy(struct response *res, struct server_information info, char* source, char* destination);
 int             htmlResponse(char* str_html);
+bool            is_leap_year(int year);

@@ -505,10 +505,105 @@ get_user_directroy_ifexists(char* uri) {
     (void) free(user);
     (void) free(uri_path);
 
-	printf("uri path is :: %s\n", r_uri);
 	return r_uri;
 }
 
 /*
 * TODO: add date validation
 */
+bool            
+validate_tm(struct tm *time_ptr) {
+
+	/* If-Modified-Since: Sat, 99 Oct 1994 19:43:31 GMT */
+	int year = 1900 + time_ptr->tm_year;
+
+	/* validate tm_sec - seconds */
+	if(!(time_ptr->tm_sec >= 0 && time_ptr->tm_sec <= 60)) {
+		return false;
+	}
+	
+	/* validating tm_min - minutes (Not working) */
+	if(!(time_ptr->tm_min >= 0 && time_ptr->tm_min <= 59)) {
+		return false;
+	}
+
+	/* validating tm_hour - hours  (Not working)*/
+	if(!(time_ptr->tm_hour >= 0 && time_ptr->tm_hour <= 23)) {
+		return false;
+	}
+
+	/* validating tm_year - year */
+
+	/* validating tm_mon - month */
+	if(!(time_ptr->tm_mon >= 0 && time_ptr->tm_mon <= 11)) {
+		return false;
+	}
+	
+
+	/* validating tm_mday - day of the month */
+	if(!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <=31))  {
+		return false;
+	}
+
+	/* validating tm_mday based on the month */
+	switch (time_ptr->tm_mon)
+	{
+		case 0:
+		case 2:
+		case 4:
+		case 6:
+		case 7:
+		case 9:
+		case 11:
+			if(!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <=31))  {
+				return false;
+			}
+			break;
+		case 3:
+		case 5:
+		case 8:
+		case 10:
+			if(!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <=  30))  {
+				return false;
+			}
+			break;
+		case 1:
+				if(is_leap_year(year)) {
+					if(!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <= 29))  {
+						return false;
+					}
+				} else {
+					if(!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <= 28))  {
+						return false;
+					}
+				}
+			break;
+		default:
+			return false;
+			break;
+	}
+
+	return true;
+}
+
+/**
+ * Funtion to check for leap year returns boolean true if 'yes'
+ * or boolean false if 'no'
+ * */
+bool            
+is_leap_year(int year) {
+	if(year%4 == 0) {
+        if( year%100 == 0) 
+		{
+            if ( year%400 == 0)
+                return true;
+            else
+                return false;
+        }
+        else
+            return true;
+    }
+    else {
+        return false;
+	}
+}
