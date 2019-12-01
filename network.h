@@ -84,6 +84,7 @@ struct server_information {
     char    *server_name;
     char    *ip_address;
     char    *cgi_directory;
+    int     connections;
 };
 
 FILE* fp;
