@@ -441,6 +441,64 @@ validate_date(char* date_str, struct request *req) {
 	return valid;
 }
 
+/**
+ * If the request begins with a "˜", then the following string up to the 
+ * first slash is translated into that user’s sws directory (ie /home/<user>/sws/)
+ * */
+char*           
+get_user_directroy_ifexists(char* uri) {
+    char            *loc;
+    int             index;
+    char            *user;
+    char            *uri_path;
+	char			*p;
+	char 			*r_uri;
+    struct passwd   *passwd;
+
+	if((p = strchr(uri, '~')) == NULL ) {
+		return uri;
+    }
+
+	p++; /* skipping `~` from the string */
+
+    if((user = malloc(MAXNAMLEN)) == NULL) {
+        fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
+		exit(1);
+    }
+
+    if((uri_path = malloc(PATH_MAX)) == NULL) {
+        fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
+		exit(1);
+    }
+    
+    if( (loc = strchr(p, '/')) != NULL) {
+        index = (int) (loc - p);
+        strncpy(user, p, index);
+
+        if((passwd = getpwnam(user)) == NULL) {
+            fprintf(stderr, "getpwnam() error: %s \n", strerror(errno));
+			exit(1);
+        }
+
+        strcat(uri_path, passwd->pw_dir);
+        strcat(uri_path, loc);
+
+    } else {
+        /* hanlde if slash(/) does not exist */
+    }
+
+	if ((r_uri = strdup(uri_path)) == NULL) {
+        fprintf(stderr, "Out of memory.\n");
+        exit(1);
+    }
+
+    (void) free(user);
+    (void) free(uri_path);
+
+	printf("uri path is :: %s\n", r_uri);
+	return r_uri;
+}
+
 /*
 * TODO: add date validation
 */
