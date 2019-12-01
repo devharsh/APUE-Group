@@ -45,6 +45,7 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
 	* 10 = combination of 4 and 6. This is not a protocol, just for logic purposes.
 	*/
 	if (server_info.protocol == 10) {
+		off = 0;
 		if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &off, sizeof(off)) != 0) {
 			fprintf(stderr, "Could not change settings for socket: %s\n", strerror(errno));
 			return 1;
