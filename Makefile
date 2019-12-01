@@ -6,8 +6,8 @@ RM = rm -f
 default: $(TARGET)
 all: default
 
-$(TARGET): $(TARGET).o helper.o network.o bbcp.o cgi.o
-	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).o helper.o network.o bbcp.o cgi.o
+$(TARGET): $(TARGET).o helper.o network.o bbcp.o cgi.o ls.o
+	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).o helper.o network.o bbcp.o cgi.o ls.o
 
 $(TARGET).o: $(TARGET).c $(TARGET).h
 	$(CC) $(CFLAGS) -c $(TARGET).c
@@ -17,6 +17,9 @@ helper.o: helper.c helper.h
 
 network.o: network.c network.h
 	$(CC) $(CFLAGS) -c network.c
+
+ls.o: ls.c network.h
+	$(CC) $(CFLAGS) -c ls.c
 
 bbcp.o: bbcp.c bbcp.h
 	$(CC) $(CFLAGS) -c bbcp.c

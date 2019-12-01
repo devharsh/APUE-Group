@@ -285,7 +285,7 @@ process_request(struct request *req, struct response *res, struct server_informa
 		if (S_ISREG(sb->st_mode)) {
 			printf("regular file: %s\n", final_path);
 		} else if (S_ISDIR(sb->st_mode)) {
-			printf("Directory: %s\n", final_path);
+			(void) traverse_files(req, res, info);
 		} else {
 
 		}
@@ -340,8 +340,7 @@ write_response_to_socket(struct request *req, struct response *res) {
 	}
 	
 	(void) write_to_socket("Server: ", res->server);
-
-	if (res->status != 200 || strcmp(req->method, "GET") == 0) {
+	if (res->status != 200 || strncmp(req->method, "GET", 3) == 0) {
 		(void) write(msgsock, "\n", 1);
 		(void) write_to_socket(NULL, res->data);
 	}
