@@ -23,9 +23,10 @@
 #include <ctype.h>
 #include <fcntl.h>
 #include <paths.h>
+#include <libgen.h>
 
 #define TRUE 1
-#define BUFFERSIZE 16384
+#define BUFFERSIZE 1048576
 #define TIMEOUT 60
 
 /* 1 MB buffer size for copying */
@@ -72,7 +73,7 @@ struct response {
     char *date; 
     char *server; 
     char *last_modified; 
-    char *content_type; 
+    const char *content_type; 
     int  content_length; 
     char *data; 
 };
@@ -82,17 +83,18 @@ struct server_information {
     int     port;
     char    *server_name;
     char    *ip_address;
+    char    *cgi_directory;
+    int     connections;
 };
 
 FILE* fp;
 
-int     msgsock;
-int     open_connection(struct sockaddr *server, struct server_information);
-int     (*compar) (const FTSENT **, const FTSENT **);
-int     handle_child_request(struct server_information server_info);
-void    handle_child_process(__attribute__((unused)) int signal);
-int     add_line_to_request(char *request, char *line, unsigned int buffersize);
-
+int     	msgsock;
+int     	open_connection(struct sockaddr *server, struct server_information);
+int     	(*compar) (const FTSENT **, const FTSENT **);
+int     	handle_child_request(struct server_information server_info);
+void    	handle_child_process(__attribute__((unused)) int signal);
+int     	add_line_to_request(char *request, char *line, unsigned int buffersize);
 char*           generate_html(char* data);
 int             append_char(char *string, char character);
 int             generate_uri_information(char *uri);
@@ -105,17 +107,19 @@ bool            parse_first_line(char *line, struct request *req);
 bool            validate_additional_information(char *line, struct request *req);
 bool            validate_date(char* date_str, struct request *req);
 bool            validate_tm(struct tm *time_ptr);
-int             traverse_files(struct request *req);
+int             traverse_files(struct request *req, struct response *res, struct server_information info);
 int             sortLexographical(const FTSENT **fileEntryPointer, const FTSENT **fileEntryPointerTwo);
 char*           generate_error_contents(int e_no);
 char*           prepare_listing_table(char* data);
-void            prepare_response_directorylisting(char* html, int status);
+void            prepare_response_directorylisting(struct response *res, char* html, int status, struct server_information info);
 void            generate_error_response(struct response *res, struct server_information info, int status, char *error);
 void            generate_response(struct response *res, struct server_information info, char *output, char *error);
 int             cgi_request(struct request *req, struct response *res, struct server_information server_info);
 void            write_response_to_socket(struct request *req, struct response *res);
-void            write_to_socket(char *key, char *value);
+void            write_to_socket(char *key, const char *value);
 char*           get_user_directroy_ifexists(char* uri);
 int             fileCopy(struct response *res, struct server_information info, char* source, char* destination);
 int             htmlResponse(char* str_html);
 bool            is_leap_year(int year);
+int             process_request(struct request *req, struct response *res, struct server_information info);
+int             check_general_errors(struct response *res, struct server_information info);

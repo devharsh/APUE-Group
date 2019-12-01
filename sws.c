@@ -6,6 +6,7 @@ main(int argc, char* argv[]) {
 	int is_chdir;*/
 	int opt;
 	int port;
+	int daemonize;
 	/*int is_close = 1;*/ 
 
 	char *address = NULL;
@@ -13,15 +14,22 @@ main(int argc, char* argv[]) {
 	opt = 0;
 	port = 8080;
  	is_chdir = 1;
+	daemonize = true;
 	
 	server = malloc(sizeof(struct sockaddr));
 	server_info.server_name = "SWS_HTTP/1.0";
+	server_info.cgi_directory = "/cgi-bin"; 
+	server_info.connections = 5;
 
 	while ((opt = getopt(argc, argv,"c:dhi:l:p:")) != -1) {  
         	switch(opt) {
 			case 'c':
+				server_info.cgi_directory = optarg;
 				break;
 			case 'd':
+				server_info.connections = 1;
+				daemonize = false;
+				break;
 			case 'h':
 				printf("usage: sws [-dh] [-c dir] [-i address] ");
 			 	printf("[-l file] [-p port] dir\n");
@@ -40,7 +48,11 @@ main(int argc, char* argv[]) {
 					exit(1);
 				}
 
-				break;	
+				break;
+			case '?':
+				fprintf(stderr, "usage: sws [-dh] [-c dir] [-i address] ");
+			 	fprintf(stderr, "[-l file] [-p port] dir\n");
+				return 1;
 			default:
 				break;
 		}
@@ -51,20 +63,13 @@ main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	/*if (setsid() == -1)
-		return (-1);*/
+	if (daemonize) {
+		if (daemon(0, 0) != 0) {
+			fprintf(stderr, "Could not daemonize process: %s\n", strerror(errno));
+			return 1;
+		}
+	}
 
-	if (is_chdir)
-		(void) chdir("/");
-	/* daemonize the process 
-	if (is_close && (fd = open(_PATH_DEVNULL, O_RDWR, 0)) != -1) {
-		(void)dup2(fd, STDIN_FILENO);
-		(void)dup2(fd, STDOUT_FILENO);
-		(void)dup2(fd, STDERR_FILENO);
-		if (fd > STDERR_FILENO)
-			(void)close(fd);
-	}*/
-	
 	if (open_connection(server, server_info) != 0) {
 		return 1;
 	}

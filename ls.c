@@ -6,7 +6,7 @@
  *                      the file are copied to the response.
  * */
 int 
-traverse_files(struct request *req)
+traverse_files(struct request *req, struct response *res, struct server_information info)
 {
     FTS     *ftsp;
     FTSENT  *ftsent;
@@ -75,10 +75,10 @@ traverse_files(struct request *req)
                 if (sprintf(f_name, "\
                                     <tr>\n\
                                         <td>\n\
-                                            <a href='#'>%s</a>\n\
+                                            <a href='%s%s'>%s</a>\n\
                                         </td>\n\
                                     </tr>\n", 
-                                    children->fts_name) < 0) {
+                                    children->fts_accpath, children->fts_name, children->fts_name) < 0) {
                     fprintf(stderr, "read error %s\n", children->fts_name);
                 }
                 
@@ -106,7 +106,7 @@ traverse_files(struct request *req)
     (void) free(arguments);
     (void) free(contents);
 
-    prepare_response_directorylisting(html, status);
+    prepare_response_directorylisting(res, html, status, info);
 
     return 0;
 }
@@ -238,16 +238,10 @@ sortLexographical(const FTSENT **fileEntryPointer, const FTSENT **fileEntryPoint
  * This function generates reponse object for all kind of senarios
  * */
 void
-prepare_response_directorylisting(char* html, int status) {
-    struct response *res;
-    
+prepare_response_directorylisting(struct response *res, char* html, int status, struct server_information info) {
     res->data = html;
     res->content_type = "text/html";
     res->content_length = strlen(html);
     res->status = status;
-
-    printf("%s\n", res->data);
-    printf("content-length : %d\n", res->content_length);
-    printf("content-type : %s\n", res->content_type);
-    printf("status : %d\n", res->status);
+    res->server = info.server_name;
 }

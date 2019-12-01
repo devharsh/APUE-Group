@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "helper.h"
 #include "network.h"
 
 /* 1 MB buffer size for copying */
@@ -18,9 +19,8 @@
 #ifndef BUF_LIMIT
 #define BUF_LIMIT 512
 #endif
+	
+char* data = NULL;
 
 int
-fileCopy(struct response *res, struct server_information info, char* source, char* destination);
-
-int
-htmlResponse(char* str_html);
+fileCopy(struct response *res, struct server_information server_info, char* source);

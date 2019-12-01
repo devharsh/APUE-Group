@@ -34,7 +34,6 @@ cgi_request(struct request *req, struct response *res, struct server_information
         if (res->status == 200) {
             generate_error_response(res, server_info, 500, "Internal Server Error");
         }
-        
         return 1;
     }
 
@@ -50,7 +49,6 @@ cgi_request(struct request *req, struct response *res, struct server_information
        if (output[1] != STDOUT_FILENO) {
             if (dup2(output[1], STDOUT_FILENO) != STDOUT_FILENO) {
                 fprintf(stderr, "Could not duplicate fd: %s \n", strerror(errno));
-                generate_error_response(res, server_info, 500, "Internal Server Error");
                 exit(1);
             }
         }
@@ -58,7 +56,6 @@ cgi_request(struct request *req, struct response *res, struct server_information
         if (error[1] != STDERR_FILENO) {
             if (dup2(error[1], STDERR_FILENO) != STDERR_FILENO) {
                 fprintf(stderr, "Could not duplicate fd: %s \n", strerror(errno));
-                generate_error_response(res, server_info, 500, "Internal Server Error");
                 exit(1);
             }
         }
@@ -66,8 +63,8 @@ cgi_request(struct request *req, struct response *res, struct server_information
         arg[0] = '\0';
         
         (void) execvpe(path, arg, environment);
-        return 1;
-
+        
+        exit(1);
     } else {
         (void) close(output[1]);
         (void) close(error[1]);
