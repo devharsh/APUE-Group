@@ -75,10 +75,10 @@ traverse_files(struct request *req, struct response *res, struct server_informat
                 if (sprintf(f_name, "\
                                     <tr>\n\
                                         <td>\n\
-                                            <a href='#'>%s</a>\n\
+                                            <a href='%s%s'>%s</a>\n\
                                         </td>\n\
                                     </tr>\n", 
-                                    children->fts_name) < 0) {
+                                    children->fts_accpath, children->fts_name, children->fts_name) < 0) {
                     fprintf(stderr, "read error %s\n", children->fts_name);
                 }
                 

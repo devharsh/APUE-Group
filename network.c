@@ -208,6 +208,7 @@ process_request(struct request *req, struct response *res, struct server_informa
 	final_path[0] = '\0'; 
 
 	if (realpath(uri, path) == NULL) {
+		printf("what: %s\n", uri);
 		fprintf(stderr, "Could not resolve path: %s\n", strerror(errno));
 		generate_error_response(res, info, 500, "Internal Server Error");
 		return 1;
