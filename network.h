@@ -73,7 +73,7 @@ struct response {
     char *date; 
     char *server; 
     char *last_modified; 
-    char *content_type; 
+    const char *content_type; 
     int  content_length; 
     char *data; 
 };
@@ -89,13 +89,12 @@ struct server_information {
 
 FILE* fp;
 
-int     msgsock;
-int     open_connection(struct sockaddr *server, struct server_information);
-int     (*compar) (const FTSENT **, const FTSENT **);
-int     handle_child_request(struct server_information server_info);
-void    handle_child_process(__attribute__((unused)) int signal);
-int     add_line_to_request(char *request, char *line, unsigned int buffersize);
-
+int     	msgsock;
+int     	open_connection(struct sockaddr *server, struct server_information);
+int     	(*compar) (const FTSENT **, const FTSENT **);
+int     	handle_child_request(struct server_information server_info);
+void    	handle_child_process(__attribute__((unused)) int signal);
+int     	add_line_to_request(char *request, char *line, unsigned int buffersize);
 char*           generate_html(char* data);
 int             append_char(char *string, char character);
 int             generate_uri_information(char *uri);
@@ -117,8 +116,6 @@ void            generate_error_response(struct response *res, struct server_info
 void            generate_response(struct response *res, struct server_information info, char *output, char *error);
 int             cgi_request(struct request *req, struct response *res, struct server_information server_info);
 void            write_response_to_socket(struct request *req, struct response *res);
-void            write_to_socket(char *key, char *value);
+void            write_to_socket(char *key, const char *value);
 char*           get_user_directroy_ifexists(char* uri);
-int             fileCopy(struct response *res, struct server_information info, char* source, char* destination);
-int             htmlResponse(char* str_html);
 int             process_request(struct request *req, struct response *res, struct server_information info);
