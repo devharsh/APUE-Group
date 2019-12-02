@@ -241,9 +241,6 @@ set_environment(struct request *req, struct response *res, struct server_informa
 
     environment[env_index++] = '\0';
     
-    (void) free(hostname);
-    (void) free(port);
-    
     return environment;
 }
 
