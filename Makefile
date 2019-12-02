@@ -21,7 +21,7 @@ network.o: network.c network.h
 ls.o: ls.c network.h
 	$(CC) $(CFLAGS) -c ls.c
 
-bbcp.o: bbcp.c bbcp.h
+bbcp.o: bbcp.c network.h
 	$(CC) $(CFLAGS) -c bbcp.c
 
 cgi.o: cgi.c network.h

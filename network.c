@@ -39,9 +39,9 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
 	}
 
 	/*
-	* This condition is for us to determine if we need to listen on all ipv4 and ipv6 addresses
-	* 10 = combination of 4 and 6. This is not a protocol, just for logic purposes.
-	*/
+	 * This condition is for us to determine if we need to listen on all ipv4 and ipv6 addresses
+	 * 10 = combination of 4 and 6. This is not a protocol, just for logic purposes.
+	 */
 	if (server_info.protocol == 10) {
 		off = 0;
 		if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &off, sizeof(off)) != 0) {
@@ -78,10 +78,10 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
 			return 1;
 		}
 		/*
-		* fork a new process to handle the request, since we have a queue with a backlog,
-		* if we do not do this then the other requests are blocked until we complete the 
-		* current request.
-		*/
+		 * fork a new process to handle the request, since we have a queue with a backlog,
+		 * if we do not do this then the other requests are blocked until we complete the 
+		 * current request.
+		 */
 		if ((pid = fork()) < 0) {
 			fprintf(stderr, "Unable to fork process: %s \n", strerror(errno));
 			return 1;
@@ -100,7 +100,7 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
  * All processing in the child process is available in this function
  * It basically reads from the socket until consecutive "\r\n" are encountered
  * 
-**/
+ **/
 int
 handle_child_request(struct server_information server_info) {
 	int  			init = false;
@@ -204,11 +204,11 @@ process_request(struct request *req, struct response *res, struct server_informa
 	int index;
 	struct stat *sb;
 
-	 if ((sb = malloc(sizeof (struct stat))) == NULL) {
-        fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+	if ((sb = malloc(sizeof (struct stat))) == NULL) {
+        	fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
 		generate_error_response(res, info, 500, "Internal Server Error");
 		return 1;
-    }
+    	}
 
 	if ((uri = strdup(req->uri)) == NULL) {
 		fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
@@ -292,6 +292,7 @@ process_request(struct request *req, struct response *res, struct server_informa
 
 		if (S_ISREG(sb->st_mode)) {
 			printf("regular file: %s\n", final_path);
+			fileCopy(res, info, final_path);
 		} else if (S_ISDIR(sb->st_mode)) {
 			(void) traverse_files(req, res, info);
 		} else {
