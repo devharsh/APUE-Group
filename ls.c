@@ -27,6 +27,8 @@ traverse_files(struct request *req, struct response *res, struct server_informat
     arguments = malloc(1 * sizeof(char *));
     if (arguments == NULL) { 
         fprintf(stderr, "Memory error: %s\n", strerror(errno));
+        generate_error_response(res, info, 500, "Internal Server Error");
+        return 1;
     }
     if (req->uri != NULL) {
         arguments[0] = req->uri;
@@ -34,17 +36,21 @@ traverse_files(struct request *req, struct response *res, struct server_informat
 
     if((contents = malloc(BUFFERSIZE)) == NULL) {
         fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
-		exit(1);
+		generate_error_response(res, info, 500, "Internal Server Error");
+        return 1;
     }
 
     if((index_path = malloc(PATH_MAX)) == NULL) {
         fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
-		exit(1);
+		generate_error_response(res, info, 500, "Internal Server Error");
+        return 1;
     }
     
 
     if ((ftsp = fts_open(arguments, options, compar)) == NULL) {
         fprintf(stderr, "FTS error : %s\n", strerror(errno));
+        generate_error_response(res, info, 500, "Internal Server Error");
+        return 1;
     }
 
     while ((ftsent = fts_read(ftsp)) != NULL)
@@ -89,6 +95,8 @@ traverse_files(struct request *req, struct response *res, struct server_informat
                                     </tr>\n", 
                                     children->fts_accpath, children->fts_name, children->fts_name) < 0) {
                     fprintf(stderr, "read error %s\n", children->fts_name);
+                    generate_error_response(res, info, 500, "Internal Server Error");
+                    return 1;
                 }
                 
                 strcat(contents, f_name);
@@ -127,7 +135,7 @@ traverse_files(struct request *req, struct response *res, struct server_informat
  * This function generates table for Directory listing
  * */
 char*   
-prepare_listing_table(char* data){
+prepare_listing_table(char* data) {
     char *table;
     char *r_table;
 
