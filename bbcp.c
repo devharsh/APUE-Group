@@ -10,19 +10,19 @@ fileCopy(struct response* res, struct server_information server_info, char* sour
 
 	if (access(source, R_OK) != 0) {
 		fprintf(stderr, "%s is not readable (access denied)\n", source);
-		generate_error_response(res, server_info, 500, "Internal Server Error");
+		generate_error_response(res, server_info, 403, "Unauthorized Access");
 		return 1;
 	}
 	
 	if (stat(source, &buf) != 0) {
 		fprintf(stderr, "%s is not readable (access denied)\n", source);
-		generate_error_response(res, server_info, 500, "Internal Server Error");
+		generate_error_response(res, server_info, 403, "Unauthorized Access");
 		return 1;
 	}
 
 	if (!S_ISREG(buf.st_mode)) {
 		fprintf(stderr, "Not a valid file: %s\n", source);
-		generate_error_response(res, server_info, 500, "Internal Server Error");
+		generate_error_response(res, server_info, 404, "No such file or directory");
 		return 1;
 	}
 	
