@@ -18,7 +18,7 @@ traverse_files(struct request *req, struct response *res, struct server_informat
     bool    index_file_found = false;
     char    *html;
     bool    err_flag = false;
-    int     status;
+    int     status = 500;
 
     compar = &sortLexographical;
     options = FTS_PHYSICAL | FTS_NOCHDIR;
@@ -27,7 +27,9 @@ traverse_files(struct request *req, struct response *res, struct server_informat
     if (arguments == NULL) { 
         fprintf(stderr, "Memory error: %s\n", strerror(errno));
     }
-    arguments[0] = req->uri;
+    if (req->uri != NULL) {
+        arguments[0] = req->uri;
+    }
 
     if((contents = malloc(BUFFERSIZE)) == NULL) {
         fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
