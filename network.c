@@ -427,9 +427,7 @@ write_response_to_socket(struct request *req, struct response *res) {
 	/*Tue, 26 Nov 2019 22:51:25 GMT*/
 	(void) strftime(time_str, sizeof(time_str), "%a, %d %b %Y %H:%M:%S %Z", current_time_struct);
 	
-	if (res->date != NULL) {
-		(void) write_to_socket("Date: ", res->date);
-	} else {
+	if (time_str != NULL) {
 		(void) write_to_socket("Date: ", time_str);
 	}
 	
