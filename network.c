@@ -224,13 +224,7 @@ process_request(struct request *req, struct response *res, struct server_informa
 
 	final_path[0] = '\0'; 
 
-	if (realpath(uri, path) == NULL) {
-		if (check_general_errors(res, info) == 0) {
-			fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
-			generate_error_response(res, info, 500, "Internal Server Error");
-		}
-		return 1;
-	}
+	(void) realpath(uri, path);
 
 	if (strncmp(path, "/cgi-bin", 8) == 0) {
 		ptr = strtok_r(uri, "/", &last);
@@ -271,7 +265,6 @@ process_request(struct request *req, struct response *res, struct server_informa
 
 	} else {
 		ptr = strtok_r(uri, "?", &last);
-
 		errno = 0;
 		if (realpath(ptr, final_path) == NULL) {
 			if (check_general_errors(res, info) == 0) {
@@ -294,6 +287,8 @@ process_request(struct request *req, struct response *res, struct server_informa
 			generate_error_response(res, info, 500, "Internal Server Error");
 			return 1;
 		}
+
+		req->uri = final_path;
 
 		if (S_ISREG(sb->st_mode)) {
 			printf("regular file: %s\n", final_path);
@@ -562,7 +557,7 @@ parse_first_line(char *line, struct request *req) {
 						}
 						break;
 					case 2:
-						if (strcmp(ptr, "HTTP/1.1") == 0) {
+						if (strcmp(ptr, "HTTP/1.0") == 0) {
 							validate_protocol = 1;
 							protocol = ptr;
 						}
