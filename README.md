@@ -1,13 +1,12 @@
 # APUE-Group
-CS 631 - Group Project
+-   CS 631 - Group Project
 
 ## Members
-Hem Shah (hshah42)  
-P. Athiban (pathiban)  
-Devharsh Trivedi (dtrived5)
+-   Hem Shah (hshah42)  
+-   P. Athiban (pathiban)  
+-   Devharsh Trivedi (dtrived5)
 
 ## Contributions
-
 ### hshah42
 -   CGI execution
 -   Logging
