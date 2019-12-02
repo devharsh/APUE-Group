@@ -4,6 +4,12 @@ char *path_info;
 char *path;
 char *query_string;
 
+void
+handle_child_exec_process(__attribute__((unused)) int signal) {
+    printf("handle_child_exec_process\n");
+	(void) waitid(P_ALL, 0, NULL ,WNOHANG);
+}
+
 int
 cgi_request(struct request *req, struct response *res, struct server_information server_info) {
     int output[2], error[2];
@@ -36,7 +42,6 @@ cgi_request(struct request *req, struct response *res, struct server_information
         }
         return 1;
     }
-
 
     if ((child = fork()) < 0) {
         fprintf(stderr, "Could not fork a new process: %s \n", strerror(errno));

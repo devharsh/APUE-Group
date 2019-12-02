@@ -48,26 +48,6 @@ struct request {
     time_t      timestamp;
 };
 
-
-/**
- * Status-Code    = "200"   ; OK
-                      | "201"   ; Created
-                      | "202"   ; Accepted
-                      | "204"   ; No Content
-                      | "301"   ; Moved Permanently
-                      | "302"   ; Moved Temporarily
-                      | "304"   ; Not Modified
-                      | "400"   ; Bad Request
-                      | "401"   ; Unauthorized
-                      | "403"   ; Forbidden
-                      | "404"   ; Not Found
-                      | "500"   ; Internal Server Error
-                      | "501"   ; Not Implemented
-                      | "502"   ; Bad Gateway
-                      | "503"   ; Service Unavailable
-                      | extension-code
-*/
-
 struct response {
     int status;
     char *date; 
@@ -123,3 +103,4 @@ bool            is_leap_year(int year);
 int             process_request(struct request *req, struct response *res, struct server_information info);
 int             check_general_errors(struct response *res, struct server_information info);
 char *          get_status_code_value(int status);
+void            handle_child_exec_process(__attribute__((unused)) int signal);

@@ -9,7 +9,7 @@ read_alarm_signal_handler(__attribute__((unused)) int signal) {
 
 void
 handle_child_process(__attribute__((unused)) int signal) {
-	(void) waitid(P_ALL, 0, NULL ,WNOHANG);
+	(void) wait(NULL);
 }
 
 /**
@@ -62,7 +62,12 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
 	}
 
 	/* Start accepting connections */
-	listen(sock, 5);
+	listen(sock, server_info.connections);
+
+	if (signal(SIGCHLD, handle_child_process) == SIG_ERR) {
+		fprintf(stderr, "Could not register signal: %s \n", strerror(errno));
+		return 1;
+	}
 
 	do {
 		length = sizeof(client);
@@ -119,8 +124,7 @@ handle_child_request(struct server_information server_info) {
 
 	raw_request[0] = '\0';
 
-	if (signal(SIGALRM, read_alarm_signal_handler) == SIG_ERR ||
-		signal(SIGCHLD, handle_child_process) == SIG_ERR) {
+	if (signal(SIGALRM, read_alarm_signal_handler) == SIG_ERR) {
 		fprintf(stderr, "Could not register signal: %s \n", strerror(errno));
 		return 1;
 	}
