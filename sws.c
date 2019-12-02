@@ -157,7 +157,7 @@ int
 get_logging_file_descriptor(char *path) {
 	int file_descriptor;
 
-	if ((file_descriptor = open(path, O_CREAT | O_WRONLY | O_APPEND)) < 0) {
+	if ((file_descriptor = open(path, O_CREAT | O_WRONLY | O_APPEND, 0644)) < 0) {
 		fprintf(stderr, "Could not open file for logging: %s\n", strerror(errno));
 		return -1;
 	}

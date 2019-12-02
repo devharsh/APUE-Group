@@ -331,8 +331,10 @@ process_request(struct request *req, struct response *res, struct server_informa
 		}
 
 		if (stat(final_path, sb) != 0) {
-			fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
-			generate_error_response(res, info, 500, "Internal Server Error");
+			if (check_general_errors(res, info) == 0) {
+				fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
+				generate_error_response(res, info, 500, "Internal Server Error");
+			}
 			return 1;
 		}
 

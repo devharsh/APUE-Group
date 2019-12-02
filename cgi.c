@@ -4,12 +4,18 @@ char *path_info;
 char *path;
 char *query_string;
 
+/**
+ * cgi_request takes in requests that ask for execution for scripts
+ * This method takes in struct request and then generates the struct
+ * response accordingly
+ **/
 int
 cgi_request(struct request *req, struct response *res, struct server_information server_info) {
     int output[2], error[2];
     char *output_buffer, *error_buffer;
     char *output_store, *error_store, *file_name, *dir_name, *executable;
     int content;
+    /* 12 = Total number of env vars being set */
     char *environment[12]; 
     char *arg[2];
 
@@ -136,6 +142,9 @@ cgi_request(struct request *req, struct response *res, struct server_information
     return 0;
 }
 
+/*
+* Generate response based on the output from the script
+*/
 void
 generate_response(struct response *res, struct server_information info, char *output, char *error) {
     char *output_dup, *error_dup;
