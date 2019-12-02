@@ -24,6 +24,8 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
 	pid_t pid;
 	socklen_t length;
 	struct sockaddr client;
+	char *client_address;
+	int result;
 	
 	if (server_info.protocol == 4) {
 		sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -86,7 +88,9 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
 			fprintf(stderr, "Unable to fork process: %s \n", strerror(errno));
 			return 1;
 		} else if (pid == 0) {
-			int result = handle_child_request(server_info);
+			client_address = get_remote_host_ip(client);
+			server_info.client_address = client_address;
+			result = handle_child_request(server_info);
 			return result;
 		} else {
 			(void) close(msgsock);
@@ -94,6 +98,44 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
 	} while (TRUE);
 	
 	return 0;
+}
+
+char *
+get_remote_host_ip(struct sockaddr client) {
+	int protocol_family;
+	char *ip_address;
+	struct sockaddr_in *addr_in;
+	struct sockaddr_in6 *addr_in6;
+
+	protocol_family = client.sa_family;
+
+	if (protocol_family == AF_INET6) {
+		addr_in6 = (struct sockaddr_in6 *) &client;
+
+		if ((ip_address = malloc(INET6_ADDRSTRLEN)) == NULL) {
+			fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+			return NULL;
+		}
+
+		if (inet_ntop(AF_INET6, &(addr_in6->sin6_addr), ip_address, INET6_ADDRSTRLEN) == NULL) {
+			fprintf(stderr, "Could not get address: %s\n", strerror(errno));
+			return NULL;
+		}
+	} else {
+		addr_in = (struct sockaddr_in *) &client;
+
+		if ((ip_address = malloc(INET_ADDRSTRLEN)) == NULL) {
+			fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+			return NULL;
+		}
+
+		if (inet_ntop(AF_INET, &(addr_in->sin_addr), ip_address, INET_ADDRSTRLEN) == NULL) {
+			fprintf(stderr, "Could not get address: %s\n", strerror(errno));
+			return NULL;
+		}
+	}
+
+	return ip_address;
 }
 
 /**
@@ -150,7 +192,8 @@ handle_child_request(struct server_information server_info) {
 				if ((line_dup = strdup(read_buf)) == NULL) {
 					fprintf(stderr, "Could not duplicate String: %s \n", strerror(errno));
 					send_request_error(req, res, server_info, 500, "Internal Server Error");
-					exit(1);
+					(void) close(msgsock);
+					return 1; 
 				}
 
 				bool valid_first_line = parse_first_line(line_dup, req);
@@ -182,6 +225,9 @@ handle_child_request(struct server_information server_info) {
 	write_response_to_socket(req, res);
 
 	(void) alarm(0);
+
+	(void) log_request(req, res, server_info);
+
 	(void) free(raw_request);
 	(void) free(req);
 	(void) close(msgsock);
@@ -385,6 +431,41 @@ write_response_to_socket(struct request *req, struct response *res) {
 	(void) free(content_length);
 }
 
+void
+log_request(struct request *req, struct response *res, struct server_information info) {
+	int length, status_length, content_length;
+	char *log;
+	int left, transmitted;
+
+	if (info.client_address != NULL) {
+		status_length = get_number_of_digits(res->status);
+		content_length = get_number_of_digits(res->content_length);
+		length = strlen(info.client_address) + strlen(req->current_time) 
+				 + strlen(req->method) + strlen(req->uri) + strlen(req->protocol)
+				 + status_length + content_length + 9;
+		if ((log = malloc(length)) == NULL) {
+			fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+			exit(1);
+		}
+
+		if (sprintf(log, "%s %s \"%s %s %s\" %i %i\n", info.client_address, req->current_time,
+					req->method, req->uri, req->protocol, res->status, res->content_length) < 0) {
+			fprintf(stderr, "error: %s\n", strerror(errno));
+			exit(1);
+		}
+
+		left = strlen(log);
+
+		while (left > 0) {
+			if ((transmitted = write(info.log_file_descriptor, log, left)) < 0) {
+				exit(1);
+			}
+			log += transmitted;
+			left -= transmitted;
+		}
+	}
+}
+
 
 void
 generate_error_response(struct response *res, struct server_information info, int status, char *error) {
@@ -526,6 +607,9 @@ parse_first_line(char *line, struct request *req) {
 	int  validate_req = 0, validate_protocol = 0, line_number = 0, n = 0;
 	char *ptr, *last, *method, *uri, *protocol, *line_pointer_dup;
 	char *line_ptr = strtok_r(line, "\r\n", &last);
+	time_t current_time;
+  	struct tm * current_time_struct;
+	char time_str[20];
 
 	while (line_ptr != NULL) {
 		line_number++;
@@ -581,6 +665,16 @@ parse_first_line(char *line, struct request *req) {
 		req->method = method;
 		req->uri = uri;
 		req->protocol = protocol;
+
+		(void) time(&current_time);
+  		current_time_struct = gmtime(&current_time);
+		(void) strftime(time_str, sizeof(time_str), "%Y-%b-%dT%H:%M:%SZ", current_time_struct);
+		
+		if ((req->current_time = strdup(time_str)) == NULL) {
+			fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+			exit(1);
+		}
+
 		return true;
 	}
 }
@@ -824,4 +918,23 @@ generate_html(char* data) {
     (void) free(html);
     
     return r_html;
+}
+
+
+unsigned int
+get_number_of_digits(int number) {
+    unsigned int count;
+    
+    if (number == 0) {
+        return 1;
+    }
+
+    count = 0;
+
+    while (number != 0) {
+        number = number / 10;
+        count++;
+    }
+
+    return count;
 }

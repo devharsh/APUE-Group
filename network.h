@@ -47,6 +47,7 @@ struct request {
     char        *uri;
     char        *modified_since;
     struct tm   *time;
+    char        *current_time;
     time_t      timestamp;
 };
 
@@ -67,6 +68,9 @@ struct server_information {
     char    *ip_address;
     char    *cgi_directory;
     int     connections;
+    char    *log_file;
+    int     log_file_descriptor;
+    char    *client_address;
 };
 
 FILE* fp;
@@ -105,4 +109,6 @@ int             process_request(struct request *req, struct response *res, struc
 int             check_general_errors(struct response *res, struct server_information info);
 char *          get_status_code_value(int status);
 void            send_request_error(struct request *req, struct response *res, struct server_information server_info, int status, char *message);
-int		fileCopy(struct response *res, struct server_information server_info, char* source);
+int		        fileCopy(struct response *res, struct server_information server_info, char* source);
+char *          get_remote_host_ip(struct sockaddr client);
+void            log_request(struct request *req, struct response *res, struct server_information info);
