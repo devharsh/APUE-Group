@@ -241,9 +241,13 @@ sortLexographical(const FTSENT **fileEntryPointer, const FTSENT **fileEntryPoint
  * */
 void
 prepare_response_directorylisting(struct response *res, char* html, int status, struct server_information info) {
-    res->data = html;
-    res->content_type = "text/html";
-    res->content_length = strlen(html);
-    res->status = status;
-    res->server = info.server_name;
+    if (html != NULL) {
+        res->data = html;
+        res->content_type = "text/html";
+        res->content_length = strlen(html);
+        res->status = status;
+        res->server = info.server_name;
+    } else {
+        /* error response */
+    }
 }

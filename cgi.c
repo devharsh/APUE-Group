@@ -164,8 +164,8 @@ set_environment(struct request *req, struct response *res, struct server_informa
     int env_index = 0;
     
     /*
-    * PATH_TRANSLATED - request
-    */
+     * PATH_TRANSLATED - request
+     */
    if ((hostname = malloc(_POSIX_HOST_NAME_MAX)) == NULL) {
         fprintf(stderr, "Could not allocate memory 7: %s\n", strerror(errno));
         return NULL;
@@ -241,6 +241,9 @@ set_environment(struct request *req, struct response *res, struct server_informa
 
     environment[env_index++] = '\0';
     
+    (void) free(hostname);
+    (void) free(port);
+    
     return environment;
 }
 
@@ -266,6 +269,7 @@ get_env_string(char *key, char *value) {
         return NULL;
     }
 
+    (void) free(buffer);
     return result;
 }
 
