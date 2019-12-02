@@ -545,7 +545,7 @@ generate_error_response(struct response *res, struct server_information info, in
 		exit(1);
 	}
 
-        if(res->data != NULL) {
+        if(error_content != NULL) {
     		res->status = status;
     		res->data = generate_html(error_content);
     		res->content_type = "text/html";
