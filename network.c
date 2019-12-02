@@ -253,10 +253,10 @@ process_request(struct request *req, struct response *res, struct server_informa
 	struct stat *sb;
 
 	if ((sb = malloc(sizeof (struct stat))) == NULL) {
-        	fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+        fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
 		generate_error_response(res, info, 500, "Internal Server Error");
 		return 1;
-    	}
+    }
 
 	if ((uri = strdup(req->uri)) == NULL) {
 		fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
