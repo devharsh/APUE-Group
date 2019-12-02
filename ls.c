@@ -18,7 +18,7 @@ traverse_files(struct request *req, struct response *res, struct server_informat
     bool    index_file_found = false;
     char    *html;
     bool    err_flag = false;
-    int     status;
+    int     status = 500;
 
     compar = &sortLexographical;
     options = FTS_PHYSICAL | FTS_NOCHDIR;
