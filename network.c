@@ -335,14 +335,14 @@ write_response_to_socket(struct request *req, struct response *res) {
 	}
 
 	if (sprintf(status, "%d", res->status) < 0) {
-        fprintf(stderr, "error: %s\n", strerror(errno));
+        	fprintf(stderr, "error: %s\n", strerror(errno));
 		exit(1);
-    }
+    	}
 
 	if (sprintf(content_length, "%d", res->content_length) < 0) {
-        fprintf(stderr, "error: %s\n", strerror(errno));
+        	fprintf(stderr, "error: %s\n", strerror(errno));
 		exit(1);
-    }
+    	}
 
 	status_value = get_status_code_value(res->status);
 
@@ -354,9 +354,9 @@ write_response_to_socket(struct request *req, struct response *res) {
 	}
 
 	if (sprintf(full_status_string, "%s %s", status, status_value) < 0) {
-        fprintf(stderr, "error: %s\n", strerror(errno));
+        	fprintf(stderr, "error: %s\n", strerror(errno));
 		exit(1);
-    }
+    	}
 	
 	(void) write_to_socket("HTTP/1.0 ", full_status_string);
 	(void) write_to_socket("Content-Length: ", content_length);
@@ -364,14 +364,19 @@ write_response_to_socket(struct request *req, struct response *res) {
 	if (res->content_type != NULL) {
 		(void) write_to_socket("Content-Type: ", res->content_type);
 	}
-	
+
+	/* use helper function time_now? */	
   	(void) time(&current_time);
   	current_time_struct = gmtime(&current_time);
 
 	/*Tue, 26 Nov 2019 22:51:25 GMT*/
 	(void) strftime(time_str, sizeof(time_str), "%a, %d %b %Y %H:%M:%S %Z", current_time_struct);
 	
-	(void) write_to_socket("Date: " , time_str);
+	if (res->date != NULL) {
+		(void) write_to_socket("Date: ", res->date);
+	} else {
+		(void) write_to_socket("Date: ", time_str);
+	}
 	
 	if (res->last_modified != NULL) {
 		(void) write_to_socket("Last-Modified: " , res->last_modified);
