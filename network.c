@@ -479,6 +479,8 @@ log_request(struct request *req, struct response *res, struct server_information
 			left -= transmitted;
 		}
 	}
+
+	(void) free(log);
 }
 
 
