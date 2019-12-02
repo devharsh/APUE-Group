@@ -118,8 +118,8 @@ int             cgi_request(struct request *req, struct response *res, struct se
 void            write_response_to_socket(struct request *req, struct response *res);
 void            write_to_socket(char *key, const char *value);
 char*           get_user_directroy_ifexists(char* uri);
-int             fileCopy(struct response *res, struct server_information info, char* source, char* destination);
 int             htmlResponse(char* str_html);
 bool            is_leap_year(int year);
 int             process_request(struct request *req, struct response *res, struct server_information info);
 int             check_general_errors(struct response *res, struct server_information info);
+char *          get_status_code_value(int status);

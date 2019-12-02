@@ -165,14 +165,12 @@ handle_child_request(struct server_information server_info) {
 			}
 		}
 	} while (!is_request_complete(read_buf, repeat_return));
-
-	printf("input %s \n", raw_request);
+	
+	(void) alarm(0);
 	
 	process_request(req, res, server_info);
-
 	write_response_to_socket(req, res);
 
-	(void) alarm(0);
 	(void) free(raw_request);
 	(void) free(req);
 	(void) close(msgsock);
@@ -311,7 +309,8 @@ write_response_to_socket(struct request *req, struct response *res) {
 	char time_str[50];
 	char status[3];
 	char *content_length;
-	int length;
+	int length, status_length;
+	char *status_value, *full_status_string;
 
 	length = get_number_of_digits(res->content_length);
 
@@ -329,8 +328,22 @@ write_response_to_socket(struct request *req, struct response *res) {
         fprintf(stderr, "error: %s\n", strerror(errno));
 		exit(1);
     }
+
+	status_value = get_status_code_value(res->status);
+
+	status_length = strlen(status_value) + strlen(status) + 1;
+
+	if ((full_status_string = malloc(status_length)) == NULL) {
+		fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	if (sprintf(full_status_string, "%s %s", status, status_value) < 0) {
+        fprintf(stderr, "error: %s\n", strerror(errno));
+		exit(1);
+    }
 	
-	(void) write_to_socket("HTTP/1.0 ", status);
+	(void) write_to_socket("HTTP/1.0 ", full_status_string);
 	(void) write_to_socket("Content-Length: ", content_length);
 
 	if (res->content_type != NULL) {
@@ -366,6 +379,60 @@ generate_error_response(struct response *res, struct server_information info, in
     res->content_type = "text/html";
     res->content_length = strlen(error);
     res->server = info.server_name;
+}
+
+char *
+get_status_code_value(int status) {
+	char *status_string;
+
+	switch (status) {
+		case 200:
+			status_string = "OK";
+			break;
+		case 201:
+			status_string = "Created";
+			break;
+		case 202:
+			status_string = "Accepted";
+			break;
+		case 301:
+			status_string = "Moved Permanently";
+			break;
+		case 302:
+			status_string = "Moved Temporarily";
+			break;
+		case 304:
+			status_string = "Not Modified";
+			break;
+		case 400:
+			status_string = "Bad Request";
+			break;
+		case 401:
+			status_string = "Unauthorized";
+			break;
+		case 403:
+			status_string = "Forbidden";
+			break;
+		case 404:
+			status_string = "Not Found";
+			break;
+		case 500:
+			status_string = "Internal Server Error";
+			break;
+		case 501:
+			status_string = "Not Implemented";
+			break;
+		case 502:
+			status_string = "Bad Gateway";
+			break;
+		case 503:
+			status_string = "Service Unavailable";
+			break;
+		default:
+			break;
+	}
+
+	return status_string;
 }
 
 void
@@ -627,105 +694,10 @@ get_user_directroy_ifexists(char* uri) {
     (void) free(user);
     (void) free(uri_path);
 
+	printf("uri path is :: %s\n", r_uri);
 	return r_uri;
 }
 
 /*
 * TODO: add date validation
 */
-bool            
-validate_tm(struct tm *time_ptr) {
-
-	/* If-Modified-Since: Sat, 99 Oct 1994 19:43:31 GMT */
-	int year = 1900 + time_ptr->tm_year;
-
-	/* validate tm_sec - seconds */
-	if(!(time_ptr->tm_sec >= 0 && time_ptr->tm_sec <= 60)) {
-		return false;
-	}
-	
-	/* validating tm_min - minutes (Not working) */
-	if(!(time_ptr->tm_min >= 0 && time_ptr->tm_min <= 59)) {
-		return false;
-	}
-
-	/* validating tm_hour - hours  (Not working)*/
-	if(!(time_ptr->tm_hour >= 0 && time_ptr->tm_hour <= 23)) {
-		return false;
-	}
-
-	/* validating tm_year - year */
-
-	/* validating tm_mon - month */
-	if(!(time_ptr->tm_mon >= 0 && time_ptr->tm_mon <= 11)) {
-		return false;
-	}
-	
-
-	/* validating tm_mday - day of the month */
-	if(!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <=31))  {
-		return false;
-	}
-
-	/* validating tm_mday based on the month */
-	switch (time_ptr->tm_mon)
-	{
-		case 0:
-		case 2:
-		case 4:
-		case 6:
-		case 7:
-		case 9:
-		case 11:
-			if(!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <=31))  {
-				return false;
-			}
-			break;
-		case 3:
-		case 5:
-		case 8:
-		case 10:
-			if(!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <=  30))  {
-				return false;
-			}
-			break;
-		case 1:
-				if(is_leap_year(year)) {
-					if(!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <= 29))  {
-						return false;
-					}
-				} else {
-					if(!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <= 28))  {
-						return false;
-					}
-				}
-			break;
-		default:
-			return false;
-			break;
-	}
-
-	return true;
-}
-
-/**
- * Funtion to check for leap year returns boolean true if 'yes'
- * or boolean false if 'no'
- * */
-bool            
-is_leap_year(int year) {
-	if(year%4 == 0) {
-        if( year%100 == 0) 
-		{
-            if ( year%400 == 0)
-                return true;
-            else
-                return false;
-        }
-        else
-            return true;
-    }
-    else {
-        return false;
-	}
-}
