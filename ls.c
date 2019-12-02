@@ -19,6 +19,7 @@ traverse_files(struct request *req, struct response *res, struct server_informat
     char    *html;
     bool    err_flag = false;
     int     status = 500;
+    char    *index_path;
 
     compar = &sortLexographical;
     options = FTS_PHYSICAL | FTS_NOCHDIR;
@@ -35,6 +36,12 @@ traverse_files(struct request *req, struct response *res, struct server_informat
         fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
 		exit(1);
     }
+
+    if((index_path = malloc(PATH_MAX)) == NULL) {
+        fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
+		exit(1);
+    }
+    
 
     if ((ftsp = fts_open(arguments, options, compar)) == NULL) {
         fprintf(stderr, "FTS error : %s\n", strerror(errno));
@@ -92,6 +99,9 @@ traverse_files(struct request *req, struct response *res, struct server_informat
 
     if(index_file_found) {
         /* TODO: handle code for  index.html */
+        index_path = req->uri;
+        strcat(index_path, "/index.html");
+        (void) fileCopy(res, info, index_path);
     } else  {
         if(err_flag) {
             /* URI/Permissions are invalid - generating html for error */
@@ -103,12 +113,12 @@ traverse_files(struct request *req, struct response *res, struct server_informat
             contents = prepare_listing_table(contents);
         }
         html = generate_html(contents);
+        prepare_response_directorylisting(res, html, status, info);
     }
     
     (void) free(arguments);
     (void) free(contents);
-
-    prepare_response_directorylisting(res, html, status, info);
+    (void) free(index_path);
 
     return 0;
 }
