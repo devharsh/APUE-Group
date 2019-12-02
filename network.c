@@ -291,8 +291,7 @@ process_request(struct request *req, struct response *res, struct server_informa
 		req->uri = final_path;
 
 		if (S_ISREG(sb->st_mode)) {
-			printf("regular file: %s\n", final_path);
-			fileCopy(res, info, final_path);
+			(void) fileCopy(res, info, final_path);
 		} else if (S_ISDIR(sb->st_mode)) {
 			(void) traverse_files(req, res, info);
 		} else {
