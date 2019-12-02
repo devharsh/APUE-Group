@@ -7,8 +7,16 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 
+#include <ctype.h>
+#include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <fts.h>
+#include <libgen.h>
+#include <limits.h>
 #include <netdb.h>
+#include <paths.h>
+#include <pwd.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -16,14 +24,6 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include <dirent.h>
-#include <fts.h>
-#include <limits.h>
-#include <pwd.h>
-#include <ctype.h>
-#include <fcntl.h>
-#include <paths.h>
-#include <libgen.h>
 
 #define TRUE 1
 #define BUFFERSIZE 1048576

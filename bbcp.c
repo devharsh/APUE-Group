@@ -13,7 +13,11 @@ fileCopy(struct response* res, struct server_information server_info, char* sour
 		return 1;
 	}
 	
-	stat(source, &buf);
+	if (stat(source, &buf) != 0) {
+		fprintf(stderr, "%s is not readable (access denied)\n", source);
+		generate_error_response(res, server_info, 500, "Internal Server Error");
+		return 1;
+	}
 
 	if (!S_ISREG(buf.st_mode)) {
 		fprintf(stderr, "Not a valid file: %s\n", source);
