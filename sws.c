@@ -14,7 +14,11 @@ main(int argc, char* argv[]) {
  	is_chdir = 1;
 	daemonize = true;
 	
-	server = malloc(sizeof(struct sockaddr));
+	if ((server = malloc(sizeof(struct sockaddr))) == NULL) {
+		fprintf(stderr, "Could not allocate memory: %s", strerror(errno));
+		return 1;
+	}
+
 	server_info.server_name = "SWS_HTTP/1.0";
 	server_info.cgi_directory = "/cgi-bin"; 
 	server_info.connections = 5;
@@ -65,21 +69,20 @@ main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	if (server_info.log_file != NULL) {
-		if ((logging_fd  = get_logging_file_descriptor(server_info.log_file)) < 0) {
-			return 1;
-		}
-		server_info.log_file_descriptor = logging_fd;
-	}
-
 	if (daemonize) {
+		if (server_info.log_file != NULL) {
+			if ((logging_fd  = get_logging_file_descriptor(server_info.log_file)) < 0) {
+				return 1;
+			}
+			server_info.log_file_descriptor = logging_fd;
+		}
+
 		if (daemon(0, 0) != 0) {
 			fprintf(stderr, "Could not daemonize process: %s\n", strerror(errno));
 			return 1;
 		}
 	} else {
 		server_info.log_file_descriptor = STDOUT_FILENO;
-		(void) close(logging_fd);
 	}
 
 	if (open_connection(server, server_info) != 0) {

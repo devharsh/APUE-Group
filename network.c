@@ -337,13 +337,19 @@ process_request(struct request *req, struct response *res, struct server_informa
 		}
 
 		req->uri = final_path;
+		
+		if (sb->st_mtimespec.tv_sec > req->timestamp) {
+			if (S_ISREG(sb->st_mode)) {
+				(void) fileCopy(res, info, final_path);
+			} else if (S_ISDIR(sb->st_mode)) {
+				(void) traverse_files(req, res, info);
+			} else {
 
-		if (S_ISREG(sb->st_mode)) {
-			(void) fileCopy(res, info, final_path);
-		} else if (S_ISDIR(sb->st_mode)) {
-			(void) traverse_files(req, res, info);
+			}
 		} else {
-
+			res->status = 304;
+			res->server = info.server_name;
+			res->content_length = 0;
 		}
 	}
 	
@@ -382,14 +388,14 @@ write_response_to_socket(struct request *req, struct response *res) {
 	}
 
 	if (sprintf(status, "%d", res->status) < 0) {
-        	fprintf(stderr, "error: %s\n", strerror(errno));
+        fprintf(stderr, "error: %s\n", strerror(errno));
 		exit(1);
-    	}
+    }
 
 	if (sprintf(content_length, "%d", res->content_length) < 0) {
-        	fprintf(stderr, "error: %s\n", strerror(errno));
+    	fprintf(stderr, "error: %s\n", strerror(errno));
 		exit(1);
-    	}
+    }
 
 	status_value = get_status_code_value(res->status);
 
@@ -401,9 +407,9 @@ write_response_to_socket(struct request *req, struct response *res) {
 	}
 
 	if (sprintf(full_status_string, "%s %s", status, status_value) < 0) {
-        	fprintf(stderr, "error: %s\n", strerror(errno));
+    	fprintf(stderr, "error: %s\n", strerror(errno));
 		exit(1);
-    	}
+    }
 	
 	(void) write_to_socket("HTTP/1.0 ", full_status_string);
 	(void) write_to_socket("Content-Length: ", content_length);
@@ -431,8 +437,10 @@ write_response_to_socket(struct request *req, struct response *res) {
 	
 	(void) write_to_socket("Server: ", res->server);
 	if (res->status != 200 || strncmp(req->method, "GET", 3) == 0) {
-		(void) write(msgsock, "\n", 1);
-		(void) write_to_socket(NULL, res->data);
+		if (res->data != NULL) {
+			(void) write(msgsock, "\n", 1);
+			(void) write_to_socket(NULL, res->data);
+		}
 	}
 
 	(void) free(content_length);
@@ -485,6 +493,7 @@ generate_error_response(struct response *res, struct server_information info, in
 
 	if (sprintf(error_content, "<h1>%s</h1><p>%s</p>", get_status_code_value(status) , error) < 0) {
 		fprintf(stderr, "read error");
+		exit(1);
 	}
 
     res->status = status;
@@ -745,7 +754,7 @@ validate_date(char* date_str, struct request *req) {
 	if (strptime(date, "%a, %d %b %Y %T %z", timeptr) != NULL) {
 			if(validate_tm(timeptr)) {
 				req->time = timeptr;
-				req->timestamp = mktime(timeptr);
+				req->timestamp = timegm(timeptr);
 				valid = true;
 			}
     } 
@@ -754,7 +763,7 @@ validate_date(char* date_str, struct request *req) {
 	else if (strptime(date, "%a, %d-%b-%y %T %z", timeptr) != NULL) {
 		if(validate_tm(timeptr)) {
 			req->time = timeptr;
-			req->timestamp = mktime(timeptr);
+			req->timestamp = timegm(timeptr);
 			valid = true;
 		}
 	}
@@ -763,7 +772,7 @@ validate_date(char* date_str, struct request *req) {
 	else if (strptime(date, "%a %b  %d %T %Y", timeptr) != NULL) {
 		if(validate_tm(timeptr)) {
 			req->time = timeptr;
-			req->timestamp = mktime(timeptr);
+			req->timestamp = timegm(timeptr);
 			valid = true;
 		}
 	} else {
