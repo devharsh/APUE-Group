@@ -4,6 +4,12 @@ char *path_info;
 char *path;
 char *query_string;
 
+void
+handle_child_exec_process(__attribute__((unused)) int signal) {
+    printf("handle_child_exec_process\n");
+	(void) waitid(P_ALL, 0, NULL ,WNOHANG);
+}
+
 int
 cgi_request(struct request *req, struct response *res, struct server_information server_info) {
     int output[2], error[2];
@@ -36,7 +42,6 @@ cgi_request(struct request *req, struct response *res, struct server_information
         }
         return 1;
     }
-
 
     if ((child = fork()) < 0) {
         fprintf(stderr, "Could not fork a new process: %s \n", strerror(errno));
@@ -159,8 +164,8 @@ set_environment(struct request *req, struct response *res, struct server_informa
     int env_index = 0;
     
     /*
-    * PATH_TRANSLATED - request
-    */
+     * PATH_TRANSLATED - request
+     */
    if ((hostname = malloc(_POSIX_HOST_NAME_MAX)) == NULL) {
         fprintf(stderr, "Could not allocate memory 7: %s\n", strerror(errno));
         return NULL;
@@ -261,7 +266,7 @@ get_env_string(char *key, char *value) {
         return NULL;
     }
 
-    free(buffer);
+    (void) free(buffer);
     return result;
 }
 

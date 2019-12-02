@@ -9,9 +9,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-FTS *ftsp;
-FTSENT *ent;
-
 int 
 name_compare(const FTSENT ** first, const FTSENT ** second); 
 

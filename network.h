@@ -25,6 +25,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "helper.h"
+
 #define TRUE 1
 #define BUFFERSIZE 1048576
 #define TIMEOUT 60
@@ -48,26 +50,6 @@ struct request {
     time_t      timestamp;
 };
 
-
-/**
- * Status-Code    = "200"   ; OK
-                      | "201"   ; Created
-                      | "202"   ; Accepted
-                      | "204"   ; No Content
-                      | "301"   ; Moved Permanently
-                      | "302"   ; Moved Temporarily
-                      | "304"   ; Not Modified
-                      | "400"   ; Bad Request
-                      | "401"   ; Unauthorized
-                      | "403"   ; Forbidden
-                      | "404"   ; Not Found
-                      | "500"   ; Internal Server Error
-                      | "501"   ; Not Implemented
-                      | "502"   ; Bad Gateway
-                      | "503"   ; Service Unavailable
-                      | extension-code
-*/
-
 struct response {
     int status;
     char *date; 
@@ -88,8 +70,8 @@ struct server_information {
 };
 
 FILE* fp;
-
 int     	msgsock;
+
 int     	open_connection(struct sockaddr *server, struct server_information);
 int     	(*compar) (const FTSENT **, const FTSENT **);
 int     	handle_child_request(struct server_information server_info);
@@ -118,8 +100,10 @@ int             cgi_request(struct request *req, struct response *res, struct se
 void            write_response_to_socket(struct request *req, struct response *res);
 void            write_to_socket(char *key, const char *value);
 char*           get_user_directroy_ifexists(char* uri);
-int             htmlResponse(char* str_html);
 bool            is_leap_year(int year);
 int             process_request(struct request *req, struct response *res, struct server_information info);
 int             check_general_errors(struct response *res, struct server_information info);
 char *          get_status_code_value(int status);
+void            handle_child_exec_process(__attribute__((unused)) int signal);
+void            send_request_error(struct request *req, struct response *res, struct server_information server_info, int status, char *message);
+int		fileCopy(struct response *res, struct server_information server_info, char* source);

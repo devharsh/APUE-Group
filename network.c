@@ -9,7 +9,7 @@ read_alarm_signal_handler(__attribute__((unused)) int signal) {
 
 void
 handle_child_process(__attribute__((unused)) int signal) {
-	(void) waitid(P_ALL, 0, NULL ,WNOHANG);
+	(void) wait(NULL);
 }
 
 /**
@@ -39,9 +39,9 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
 	}
 
 	/*
-	* This condition is for us to determine if we need to listen on all ipv4 and ipv6 addresses
-	* 10 = combination of 4 and 6. This is not a protocol, just for logic purposes.
-	*/
+	 * This condition is for us to determine if we need to listen on all ipv4 and ipv6 addresses
+	 * 10 = combination of 4 and 6. This is not a protocol, just for logic purposes.
+	 */
 	if (server_info.protocol == 10) {
 		off = 0;
 		if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &off, sizeof(off)) != 0) {
@@ -62,7 +62,12 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
 	}
 
 	/* Start accepting connections */
-	listen(sock, 5);
+	listen(sock, server_info.connections);
+
+	if (signal(SIGCHLD, handle_child_process) == SIG_ERR) {
+		fprintf(stderr, "Could not register signal: %s \n", strerror(errno));
+		return 1;
+	}
 
 	do {
 		length = sizeof(client);
@@ -73,10 +78,10 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
 			return 1;
 		}
 		/*
-		* fork a new process to handle the request, since we have a queue with a backlog,
-		* if we do not do this then the other requests are blocked until we complete the 
-		* current request.
-		*/
+		 * fork a new process to handle the request, since we have a queue with a backlog,
+		 * if we do not do this then the other requests are blocked until we complete the 
+		 * current request.
+		 */
 		if ((pid = fork()) < 0) {
 			fprintf(stderr, "Unable to fork process: %s \n", strerror(errno));
 			return 1;
@@ -95,7 +100,7 @@ open_connection(struct sockaddr *server, struct server_information server_info) 
  * All processing in the child process is available in this function
  * It basically reads from the socket until consecutive "\r\n" are encountered
  * 
-**/
+ **/
 int
 handle_child_request(struct server_information server_info) {
 	int  			init = false;
@@ -114,14 +119,19 @@ handle_child_request(struct server_information server_info) {
 		(req = malloc(sizeof(struct request))) == NULL ||
 		(res = malloc(sizeof(struct response))) == NULL) {
 		fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
+		generate_error_response(res, server_info, 500, "Internal Server Error");
+		req->method = "GET";
+		write_response_to_socket(req, res);
 		return 1;
 	}
 
 	raw_request[0] = '\0';
 
-	if (signal(SIGALRM, read_alarm_signal_handler) == SIG_ERR ||
-		signal(SIGCHLD, handle_child_process) == SIG_ERR) {
+	if (signal(SIGALRM, read_alarm_signal_handler) == SIG_ERR) {
 		fprintf(stderr, "Could not register signal: %s \n", strerror(errno));
+		generate_error_response(res, server_info, 500, "Internal Server Error");
+		req->method = "GET";
+		write_response_to_socket(req, res);
 		return 1;
 	}
 
@@ -132,17 +142,20 @@ handle_child_request(struct server_information server_info) {
 	do {
 		bzero(read_buf, sizeof(read_buf));
 		if ((rval = read(msgsock, read_buf, BUFSIZ)) < 0) {
-			fprintf(stderr, "Could not read message from socket: %s\n", strerror(errno));
+			send_request_error(req, res, server_info, 500, "Internal Server Error");
+			write_response_to_socket(req, res);
 			return 1;
 		} else if (rval > 0) {
 			if (is_first_line) {
 				if ((line_dup = strdup(read_buf)) == NULL) {
 					fprintf(stderr, "Could not duplicate String: %s \n", strerror(errno));
+					send_request_error(req, res, server_info, 500, "Internal Server Error");
 					exit(1);
 				}
 
 				bool valid_first_line = parse_first_line(line_dup, req);
 				if (!valid_first_line) {
+					send_request_error(req, res, server_info, 400, "Invalid request");
 					(void) close(msgsock);
 					return 1;
 				} 
@@ -151,6 +164,7 @@ handle_child_request(struct server_information server_info) {
 				bool is_valid_header = validate_additional_information(read_buf, req);
 
 				if (!is_valid_header) {
+					send_request_error(req, res, server_info, 400, "Invalid request");
 					(void) close(msgsock);
 					return 1;
 				}
@@ -175,6 +189,14 @@ handle_child_request(struct server_information server_info) {
 	return 0;
 }
 
+void
+send_request_error(struct request *req, struct response *res, 
+				   struct server_information server_info, int status, char *message) {
+	generate_error_response(res, server_info, status, message);
+	req->method = "GET";
+	write_response_to_socket(req, res);
+}
+
 int
 process_request(struct request *req, struct response *res, struct server_information info) {
 	char *uri, *ptr, *last, *final_path;
@@ -182,11 +204,11 @@ process_request(struct request *req, struct response *res, struct server_informa
 	int index;
 	struct stat *sb;
 
-	 if ((sb = malloc(sizeof (struct stat))) == NULL) {
-        fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+	if ((sb = malloc(sizeof (struct stat))) == NULL) {
+        	fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
 		generate_error_response(res, info, 500, "Internal Server Error");
 		return 1;
-    }
+    	}
 
 	if ((uri = strdup(req->uri)) == NULL) {
 		fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
@@ -202,13 +224,7 @@ process_request(struct request *req, struct response *res, struct server_informa
 
 	final_path[0] = '\0'; 
 
-	if (realpath(uri, path) == NULL) {
-		if (check_general_errors(res, info) == 0) {
-			fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
-			generate_error_response(res, info, 500, "Internal Server Error");
-		}
-		return 1;
-	}
+	(void) realpath(uri, path);
 
 	if (strncmp(path, "/cgi-bin", 8) == 0) {
 		ptr = strtok_r(uri, "/", &last);
@@ -249,7 +265,6 @@ process_request(struct request *req, struct response *res, struct server_informa
 
 	} else {
 		ptr = strtok_r(uri, "?", &last);
-
 		errno = 0;
 		if (realpath(ptr, final_path) == NULL) {
 			if (check_general_errors(res, info) == 0) {
@@ -273,8 +288,11 @@ process_request(struct request *req, struct response *res, struct server_informa
 			return 1;
 		}
 
+		req->uri = final_path;
+
 		if (S_ISREG(sb->st_mode)) {
 			printf("regular file: %s\n", final_path);
+			fileCopy(res, info, final_path);
 		} else if (S_ISDIR(sb->st_mode)) {
 			(void) traverse_files(req, res, info);
 		} else {
@@ -540,7 +558,7 @@ parse_first_line(char *line, struct request *req) {
 						}
 						break;
 					case 2:
-						if (strcmp(ptr, "HTTP/1.1") == 0) {
+						if (strcmp(ptr, "HTTP/1.0") == 0) {
 							validate_protocol = 1;
 							protocol = ptr;
 						}

@@ -14,7 +14,7 @@ main(int argc, char* argv[]) {
 	opt = 0;
 	port = 8080;
  	is_chdir = 1;
-	daemonize = true;
+	daemonize = false;
 	
 	server = malloc(sizeof(struct sockaddr));
 	server_info.server_name = "SWS_HTTP/1.0";
