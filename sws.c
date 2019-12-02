@@ -43,7 +43,7 @@ main(int argc, char* argv[]) {
 				break;
 			case 'h':
 				printf("usage: sws [-dh] [-c dir] [-i address] ");
-			 	printf("[-l file] [-p port] dir\n");
+			 	printf("[-l file] [-p port] dir\n"); 
 				return 0;
 			case 'i':
 				address = optarg;
