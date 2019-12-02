@@ -1,0 +1,853 @@
+commit c43bcf5380acd36d93c6ddfb435ec3c2018601e1
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Mon Dec 2 15:15:24 2019 -0500
+
+    Update network.c
+
+commit 843032112ccc02816192bdd218c44cb7669043dd
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Mon Dec 2 15:11:16 2019 -0500
+
+    NULL data check in generate_error_response()
+
+commit 51248d6937f409abe031ddf56b7a9c3644294dd4
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Mon Dec 2 15:08:52 2019 -0500
+
+    Update network.c
+
+commit 31666ea89e62412b7ed414c0c592aa7d268bd383
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Mon Dec 2 15:07:47 2019 -0500
+
+    Update bbcp.c
+
+commit 04c316aea70d56ad84ab2536a80596613be94763
+Merge: 1b8664b 6f2cc74
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Mon Dec 2 14:53:34 2019 -0500
+
+    Merge branch 'master' of https://github.com/devharsh/APUE-Group
+
+commit 1b8664bea5c942fdb20f17978e379f0befabfa49
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Mon Dec 2 14:53:27 2019 -0500
+
+    null check handled for strcat()
+
+commit 6f2cc74ab9b43a33fb083925b4e179ed0b4faac0
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Mon Dec 2 14:48:00 2019 -0500
+
+    Update README.md
+
+commit cf55a0cf311ea574e5215c85c198bc642860538f
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Mon Dec 2 14:46:04 2019 -0500
+
+    Update checklist
+
+commit b6b5695a7229acf947a322cd58358eef133dfbab
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Mon Dec 2 14:39:10 2019 -0500
+
+    Update README.md
+
+commit a1625e50b469466b4b8dbce6d6e8b084bee6d884
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Mon Dec 2 14:36:10 2019 -0500
+
+    Update bbcp.c
+
+commit f375b2f212db2405a8bf6b14014276b0141d2405
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Dec 2 14:31:19 2019 -0500
+
+    Updated readme
+
+commit 075ba5e8ce12175a6bae63fedfbeb273b67019b4
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Mon Dec 2 13:40:30 2019 -0500
+
+    error handling for directory listing
+
+commit e21f3cb96ad6731ce2c275413cf8e69c1fe79a4c
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Dec 2 13:38:26 2019 -0500
+
+    Fixing formatting
+
+commit 4778f317223832c3fa6059f4ce7ed920fccdcbcc
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Dec 2 13:30:24 2019 -0500
+
+    Adding code for opening file with rw-r--r--
+
+commit ae590e8974c2a800d52c077dfe82634de200c3bb
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Dec 2 12:09:19 2019 -0500
+
+    Adding code to decode the url for further use
+
+commit a6bae0b9ff6acfb4e0e4c2b315f5ec0a808fa905
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Dec 2 10:38:13 2019 -0500
+
+    Adding validation for checking if -c flag directory exists and is actually a directory
+
+commit 2a13d1f05840c7c66254fa2a8ab3ab23792fa9dd
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Dec 2 04:00:36 2019 -0500
+
+    Freeing up memory
+
+commit 667b27b3e747ccc552327863458308231fdc7da6
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Dec 2 03:57:51 2019 -0500
+
+    Adding code to change dir to cgi-bin to execute script
+
+commit 2f62cfe0b54fd37e1a13cd44a82b884e7c8e62ed
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Dec 2 03:19:20 2019 -0500
+
+    Adding code to check last modified header and file
+
+commit b62db19a9f817ece5080fb183b31e6815142c696
+Merge: abb5e70 75c1834
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Mon Dec 2 01:48:26 2019 -0500
+
+    Merge branch 'master' of https://github.com/devharsh/APUE-Group
+
+commit abb5e709ee7cb114ac1401b360e7371ae611d608
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Mon Dec 2 01:48:11 2019 -0500
+
+    handled directory indexing - if index.html is found
+
+commit 75c183403d75d42aadbc4cc7452454a6bb28c3b1
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Dec 2 01:43:20 2019 -0500
+
+    Adding check on whether to log or not
+
+commit 49dec041e13a06da92b8b3ecac6357e18eba4f30
+Merge: d7cae9c 9187d7c
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Dec 2 01:39:07 2019 -0500
+
+    Merge branch 'master' of github.com:devharsh/APUE-Group
+
+commit d7cae9c898dbdb2c8e154dc17aa96c1e26c3ff0d
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Dec 2 01:39:02 2019 -0500
+
+    Adding logging for this thing
+
+commit 9187d7c925623ceae6507c48079a21d165e353a3
+Merge: 7fb72b1 dfc8754
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Mon Dec 2 00:57:06 2019 -0500
+
+    Merge branch 'master' of https://github.com/devharsh/APUE-Group
+
+commit 7fb72b167533835291d397bcd922a201150d7950
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Mon Dec 2 00:56:52 2019 -0500
+
+    generated error html for all errors
+
+commit dfc8754251657c467efec44e833460bffb476b89
+Merge: 2b907f1 190fd4c
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Mon Dec 2 00:00:33 2019 -0500
+
+    Merge branch 'master' of https://github.com/devharsh/APUE-Group
+
+commit 2b907f1794bb8c235a667531970b0451752377a8
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Mon Dec 2 00:00:09 2019 -0500
+
+    changes in write_to_socket for response date
+
+commit 190fd4cba8c6ed9a3ede5077387efc11b361df16
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Sun Dec 1 23:59:13 2019 -0500
+
+    Moved generate_htmlI() from ls.c to network.c
+
+commit 7414209d61fa905447fe3f749d41eb4786fb53e8
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 23:52:37 2019 -0500
+
+    Small code cleanup
+
+commit 940896096ccade4ee00576400afcfc1c072b1c73
+Merge: 850df17 60a9d92
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 23:50:17 2019 -0500
+
+    Merge branch 'master' of github.com:devharsh/APUE-Group
+
+commit 850df17064f8f7d8c1dca3f5f0647fd52eb30aa0
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 23:50:12 2019 -0500
+
+    Minor changes for cleanup
+
+commit 60a9d9241e82b695ef4d4f866f7ec06effc47ccb
+Merge: 2f7e484 e136ee9
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Sun Dec 1 23:28:09 2019 -0500
+
+    merge confict resolved with network.c
+
+commit 2f7e4845bf380a694375d74c1adaa1936f161801
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Sun Dec 1 23:26:47 2019 -0500
+
+    Date Validation completed and Integrated user directories in the main routine
+
+commit e136ee986d773ecfb767b8b5dbcc65a21b874b79
+Merge: a8552a1 866318a
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 22:46:13 2019 -0500
+
+    Merge branch 'master' of github.com:devharsh/APUE-Group
+
+commit a8552a136184551367e61867b35f3fca9aeb5961
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 22:46:08 2019 -0500
+
+    Fixing issue with realpath
+
+commit 866318a24ea5392e811d032f6104e30232274892
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Dec 1 22:09:09 2019 -0500
+
+    resolving merge conflicts
+
+commit ccc2d2797c5ac6664004ffe373f8d3c2061acd3b
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Dec 1 22:08:44 2019 -0500
+
+    resolving merge conflicts
+
+commit 6aaac84f44cf1a6a81271fae4e53ff893f71e3d4
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 21:39:49 2019 -0500
+
+    Sending error response when the request is not valid
+
+commit 6aa1cf060bddc52c86b60ff945524350552bccb9
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 21:17:35 2019 -0500
+
+    Reverting free as the pointers are inside an array and are  being used later on and hence would lead to undefined behaviour
+
+commit 67babdb789dc1104cb0abe98f7555440c9b86a64
+Merge: 0959afb 50d988f
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 21:16:25 2019 -0500
+
+    Merge branch 'master' of github.com:devharsh/APUE-Group
+
+commit 0959afb19993b1361fea272b9b3bb59d3526e863
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 21:16:21 2019 -0500
+
+    Adding code to handle child processes
+
+commit 50d988fd7c693e72be5d7ed5dc84e38e2fe700b3
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Dec 1 20:58:15 2019 -0500
+
+    NULL data check in prepare_response_directorylisting()
+
+commit a26f91b2fb07e77c92952a08d64d23e0cebcc7c0
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Dec 1 20:54:15 2019 -0500
+
+    free hostname and port buffers in set_environment()
+
+commit 4de25f0f51061c97dbba8405711f6b7768bbb603
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Dec 1 20:41:36 2019 -0500
+
+    CGI: added free(buffer) in get_env_string
+
+commit 01db25ad651b13acf326a77f8a09a8fa8d2ce822
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Dec 1 20:22:18 2019 -0500
+
+    NULL check for data in bbcp
+
+commit ceacfe6eab7eda8ed792f56b3e391f2da3460474
+Merge: b2245c3 26bcfe7
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 20:15:01 2019 -0500
+
+    Resolving merge conflicts
+
+commit b2245c3f71d02727349036ffb4e88e771e59b660
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 20:13:56 2019 -0500
+
+    Converting from read timeout to connection timeout
+
+commit 26bcfe7677f6ed9167909bd028f092e3b9426bf1
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Dec 1 19:57:16 2019 -0500
+
+    [Fix] Uninitialized variable: status
+
+commit 3424d954d4a80219576f4a5b5038174c37567cdf
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Dec 1 19:52:06 2019 -0500
+
+    Update ls.c
+
+commit 91c15785d6ff3c4cfefdc81eeea9d0235b62b80a
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Dec 1 19:47:30 2019 -0500
+
+    Update README.md
+
+commit 5b69a837b70f1ac6c9f70bebc975dd3bb7280797
+Merge: 989798c ed493ff
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 19:46:27 2019 -0500
+
+    resolving merge conflicts
+
+commit 989798ca71d79cb19eb86bb52f6ef940e5621827
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 19:45:16 2019 -0500
+
+    Adding status code values to response
+
+commit ed493ff37a8545dd08236278a570d20e5dfebf7b
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Dec 1 19:43:34 2019 -0500
+
+    Update README.md
+
+commit 012c30772cf5c338debaa478a2740331dcc8ba01
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Dec 1 19:38:48 2019 -0500
+
+    refactored code in network.h
+
+commit 91bca3f83f6c4e2242d41cbc9e2a91541c49dd1b
+Merge: 22019df 90dbb09
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Sun Dec 1 18:56:49 2019 -0500
+
+    merge conflict solved in the network.h
+
+commit 22019df4cc4f9e3ae531660645e6c568de990832
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Sun Dec 1 18:53:37 2019 -0500
+
+    Included - Date validation
+
+commit 90dbb09c6d667be46da49ef2ed3c6525f00aca48
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 18:51:22 2019 -0500
+
+    Adding code for increasing buffersize
+
+commit 274a0749794d238a822e067f4047ca246c0a61fe
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 18:20:14 2019 -0500
+
+    adding code for interaction with user to dive into directories
+
+commit 6d2ce4a90e26c42f3e7de86213e433a4a5f70ffd
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 17:59:22 2019 -0500
+
+    Integrating directory listing code with switch case
+
+commit 462f0b6efa2b060cb9d9592009173efab847a090
+Merge: 36b1bdb dc17f1c
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 17:37:02 2019 -0500
+
+    Merge branch 'master' of github.com:devharsh/APUE-Group
+
+commit 36b1bdb13ba5d77ad9fad300d53119bef5b0358c
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 17:36:50 2019 -0500
+
+    Parsing user input for debug and setting cgi directory
+
+commit dc17f1caaefe97d1406be5e7ad276e1d46ed703e
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Dec 1 17:31:58 2019 -0500
+
+    resolved merge conflicts in network.h
+
+commit c2285e5b56882a4d1b762abf3f20ab3257654755
+Merge: 236775b 4b0ff9d
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Dec 1 17:29:16 2019 -0500
+
+    refactored code in bbcp
+
+commit 236775b1db9984d7654a1f46743eaaaeb64022ad
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Dec 1 17:18:53 2019 -0500
+
+    refactored code for bbcp
+
+commit 4b0ff9dad733afc6da0a8fc4cd548fb7d537a665
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 17:02:25 2019 -0500
+
+    Adding off value for listening on both ipv6 and ipv4 addresses
+
+commit ec0f0121f706fc9b083af91d781bad1475117ff0
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 16:53:22 2019 -0500
+
+    Adding code to decide what function to perform on the url that was sent
+
+commit 90935edc28ad70dbc3d91b3ce17877a669501131
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Dec 1 11:05:06 2019 -0500
+
+    Replacing exit statments with return statements
+
+commit cff2126eae470cc2fca341bb6ac343ad52358d5e
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Sat Nov 30 23:28:13 2019 -0500
+
+    handled user directories for URI path
+
+commit 50bde6ee615ddb2b435de61ead56c6534976ae34
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Sat Nov 30 18:05:51 2019 -0500
+
+    removed repeated prototypes in network.h and structured code
+
+commit 9919f29877f7937b53f8af740543ddbef4eecd95
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Sat Nov 30 17:02:44 2019 -0500
+
+    generating response partially done for - directory listing, changed return type of generate_html(char*) from void to char*
+
+commit 0fb1f191dbb74f319401fcb26d19149f977eb324
+Merge: 716fd6d 5691727
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Sat Nov 30 16:59:32 2019 -0500
+
+    merge conflict solved in the network.h
+
+commit 716fd6dd4aee8b7485dedca3c8faee1eb27a1c00
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Sat Nov 30 16:57:59 2019 -0500
+
+    Committed code for function prototypes in network.h
+
+commit 5691727825d7bba0db9072bdb9138c812fa229e9
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Fri Nov 29 17:35:54 2019 -0500
+
+    added get_time_now to helper module
+
+commit 5d6897dc122c73d926c8bb5bf8f504f41e259175
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Fri Nov 29 17:27:32 2019 -0500
+
+    introducing get_mime_type API to archive
+
+commit 9001783315b60d82359834c80f658abb5e1c8a2a
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Fri Nov 29 17:21:03 2019 -0500
+
+    introducing network.h params to bbcp module
+
+commit a25b7b1dd19eda288e9ca8625527948749adc099
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Tue Nov 26 20:45:57 2019 -0500
+
+    Fixing issue where set environment needs to send reply as an error but is in child process
+
+commit 0480b2c9feb03c9ce1279dba04fe1e213031912b
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Tue Nov 26 20:29:19 2019 -0500
+
+    Adding code to send response to the client
+
+commit 67dba319a6a61bf56e3a51e665d4009a4acf4772
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Tue Nov 26 15:31:47 2019 -0500
+
+    Fixing get hostname issue
+
+commit a2755e0039951612b4042b012679e1bfb2142580
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Tue Nov 26 15:03:41 2019 -0500
+
+    Adding code to listen on all address on ipv6 and ipv4
+
+commit 308ce08589c4e3e37550c0626fb1e2a78e3c7311
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Nov 25 17:25:56 2019 -0500
+
+    Changing var names
+
+commit 47b5f1063c64fbf85ef6eafffe22972818701f4e
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Nov 25 17:25:01 2019 -0500
+
+    Removing test calls
+
+commit 754756b569e8899b37a8c44e90652d3f5b9b962a
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Nov 25 17:24:25 2019 -0500
+
+    Adding error checks
+
+commit 4786e0a33116422e054223f9dd985fb4a3f2ec86
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Nov 25 16:58:43 2019 -0500
+
+    Making sure all error conditions create an error response
+
+commit ecaf07895d8d78050f7e4edaedfe974442fc99da
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Nov 25 15:38:34 2019 -0500
+
+    Tested working of cgi and removed setenv and rather used vector to pass information to exec. For some reason setenv is messing with the stack and hence was not able to get buffer output from exec to pipe in parent process.
+
+commit d5ee005b74b9971678fb1f415d48441e15da6c66
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Nov 24 17:07:58 2019 -0500
+
+    Adding code to generate response and errors in case of cgi
+
+commit 1e1634d89aa368e627039505b049f324bd728f98
+Merge: a721afe fade239
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sat Nov 23 21:11:58 2019 -0500
+
+    Resolving merge conflicts
+
+commit a721afefb346cc9787ec73101dae6e5581fc4194
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sat Nov 23 21:10:02 2019 -0500
+
+    Adding code for setting environment and parsing the url to remove path, query string and path info
+
+commit fade23911187922f3edbc6da7c5278f9aa1eea6e
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Sat Nov 23 21:02:25 2019 -0500
+
+    Generated HTML for error response for 404, 401.
+
+commit e780f72f06a9c60250eeeb7dc9520b1d2d90ab5c
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Sat Nov 23 20:58:33 2019 -0500
+
+    Included prototypes for function, formatted code.
+
+commit da5da3cd4435d5ef2cb7552670f0afe14232e7a0
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Fri Nov 22 13:49:30 2019 -0500
+
+    Generated html while directory indexing
+
+commit b91c07775f88d64298d45c64e7d133088e202abe
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Fri Nov 22 13:48:34 2019 -0500
+
+    Included prototypes for directory indexing
+
+commit 6cb1d3cbd5ee6ae52231df8ca51b0ad17a76c483
+Merge: ca82a86 f04e1aa
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Fri Nov 22 13:46:06 2019 -0500
+
+    Resolving merge conflicts
+
+commit ca82a86974f30d86efb7d2e41fb781abfec0a864
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Fri Nov 22 13:41:19 2019 -0500
+
+    Resolving merge conflicts
+
+commit f04e1aa48489313cb67f4d2bae176bc90828899a
+Merge: 9f78baf 0234077
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Fri Nov 22 13:39:00 2019 -0500
+
+    Merge branch 'master' of github.com:devharsh/APUE-Group
+
+commit 9f78baf6ae0976082a76710c4cd45802674d91d9
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Fri Nov 22 13:38:51 2019 -0500
+
+    Adding server_information struct and some TODO comments
+
+commit 0234077380c2b9d1291b972c803bd76ab3c45b8a
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Thu Nov 21 16:37:41 2019 -0500
+
+    introducing htmlResponse() to archive
+
+commit b5b07ae2c4cf2970d1059206b232e04645eb681d
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Thu Nov 21 16:16:14 2019 -0500
+
+    introducing fileCopy() function to archive
+
+commit ea3840dcc5e3ae4113a87a7872366d250dfad696
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Nov 18 17:17:28 2019 -0500
+
+    Fixing issues with child handling
+
+commit 9ebaff5d3593a262c9d0f35c910f934edbac7edd
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Nov 18 17:14:03 2019 -0500
+
+    Adding code to wait for child
+
+commit 2f347e902e7065742d7e3af579e464a9e59472f3
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Nov 18 16:34:03 2019 -0500
+
+    Fixing support for ipv6 and ipv4 to add support for ::1 type inputs
+
+commit 4a2567ad46c2806cadbb4d464f3b21b0ba1b31de
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Mon Nov 18 00:04:46 2019 -0500
+
+    check if index.html is available
+
+commit c9bfb21ef4aa9a65a185bc16d7fc5df4b806a20a
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Nov 17 22:57:05 2019 -0500
+
+    introducing logic for directory indexing in helper.c
+
+commit 761167dbea5bd00ec67a7c904ead38f6c80cc947
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Nov 17 19:59:07 2019 -0500
+
+    changed socket logic to support both IPv4 and IPv6
+
+commit 0fe08bb000f434f279c72d24b16c9593aed0d68f
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sun Nov 17 18:59:23 2019 -0500
+
+    mentioned use of Wno-format-y2k in README
+
+commit 9e237d458cb409ea55c1d6b0707f85b820c52a6d
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Thu Nov 14 17:58:21 2019 -0500
+
+    Fixing issue where single line validation was not working
+
+commit d8bfac96cbde44d5c054a591319eeca6f15d2d49
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Thu Nov 14 17:16:07 2019 -0500
+
+    Adding missing return type checks to malloc and strdup
+
+commit 67040b559fa109ca2541ecaa4a3b082551382c7c
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Tue Nov 12 18:18:00 2019 -0500
+
+    enabled logging in parse_first_line()
+
+commit 3632e812610622c955b89f56a63767eb5fa89df5
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Tue Nov 12 17:38:22 2019 -0500
+
+    introducing optarg logic for -l switch (LOGGING feature)
+
+commit 98098b337a33a964cd39fa2bad240a91e35040b3
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Tue Nov 12 17:12:40 2019 -0500
+
+    Added initial logic to daemonize the server and refactored header files
+
+commit 355411969f206472feaaa5255fac0ca87008468f
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Nov 11 15:41:31 2019 -0500
+
+    Fixing protocol version
+
+commit 4f3e98e4fdb9b3b3f03c981f40c34c7db9769ad9
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Mon Nov 11 15:37:07 2019 -0500
+
+    Created .gitignore.
+
+commit 55fce57c65425ed4b377debfb002cce34e43b7f7
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Mon Nov 11 15:34:22 2019 -0500
+
+    integrating code with input from user
+
+commit f8e0321df2dfa8a5b7eb88a8299bb29cf05a0d3a
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Mon Nov 11 14:18:54 2019 -0500
+
+    Created validate_tm() - to validated proper month-to-date format, other cleanup like checking malloc return types
+
+commit d4ba266937b4fe3424f6df7c10ec0051829d22cc
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Mon Nov 11 12:38:07 2019 -0500
+
+    Cleaned Up - Removed unused codes and prototypes
+
+commit 3857e0046ff59f0884c72adb4b030876f346902f
+Merge: db4fe2e 0d78b5a
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Mon Nov 11 12:36:30 2019 -0500
+
+    Merge branch 'master' of https://github.com/devharsh/APUE-Group
+
+commit db4fe2ed39b6fcc532cfa76694f49d8d4b483eea
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Mon Nov 11 12:36:25 2019 -0500
+
+    Validated header - handled - 'If-Modified-Since: Sat, 29 Oct 1994 19:43:31 GMT'
+
+commit 0d78b5a072c65b1c4d440d06b0757a21c5436eeb
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Nov 10 19:02:32 2019 -0500
+
+    Fixing error where child breaks on first request but works on subsequent requests
+
+commit a820b926a6798cd2a76c513080fbbb6f9265601e
+Merge: 3cbd8d1 5920842
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Nov 10 15:30:41 2019 -0500
+
+    Merge branch 'master' of github.com:devharsh/APUE-Group
+
+commit 3cbd8d1f61c584cd9a13172af63887458c093fcd
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sun Nov 10 15:03:46 2019 -0500
+
+    Adding code for header parsing and skeleton for date validation
+
+commit 59208423d1ff43ba1ae3900f207e39d14bb08cee
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sat Nov 9 18:41:43 2019 -0500
+
+    changed socket logic in sws
+
+commit 595a4ed023ce2e4f8157cee1eec830678735f16b
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Fri Nov 8 19:32:59 2019 -0500
+
+    Fixing error related to string being modified by strtok
+
+commit cf715b5a5989f54c637dccf92f38159ae07b062a
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Fri Nov 8 19:08:32 2019 -0500
+
+    Adding skeleton for validating headers after validating the first line received
+
+commit 69178961c5c679a0afdc7275c20658963abef131
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Fri Nov 8 18:52:11 2019 -0500
+
+    Created function to validate the first line of request.
+
+commit 4ed8c13c5bb2d57e868e019d4b5640be2a9a98fb
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Fri Nov 8 15:47:58 2019 -0500
+
+    Adding structure and skeleton for parsing first line
+
+commit da075bb9c4026aec820e8d059c97a092eb1516f6
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Thu Nov 7 20:43:32 2019 -0500
+
+    Fixing few bugs related to concatenating requests line by lune
+
+commit 58cf2eca98c2bdade19e53b989b541ce484a8ddf
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Thu Nov 7 15:35:54 2019 -0500
+
+    Adding condition to check when the request is complete
+
+commit 752f4b2b24a1473c866071345377a7e34374736d
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Wed Nov 6 19:20:49 2019 -0500
+
+    included '\r' in isCarriageReturnPresent function
+
+commit e6079542719fa8c6d5ec9d2f389d0fb448f1bdbc
+Author: athiban p <athibanparthiban@gmail.com>
+Date:   Wed Nov 6 19:17:33 2019 -0500
+
+    Created function to detect carriage return in a string
+
+commit fb60bab5b3f6942ac8b085ae947bf143a54ad90d
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Tue Nov 5 18:25:56 2019 -0500
+
+    Fixing few compiler warning
+
+commit 4196d2d60e2e8a817a3eaf0b792ea79610bb23cc
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Tue Nov 5 18:20:29 2019 -0500
+
+    Adding small functionality of reading and setting a read timeout using signals and alarms
+
+commit 25e1180526c76546e82aa89233cfcd5c7cb489ef
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sat Nov 2 19:13:35 2019 -0400
+
+    fixed network.c compiler warnings
+
+commit ad505544091ce73eae37cecd4da3bc13cc522cfe
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sat Nov 2 18:58:17 2019 -0400
+
+    stream write initial code
+
+commit 78de201830734297f5ba23930a656e8d489d77e1
+Author: Hem Shah <hshah42@stevens.edu>
+Date:   Sat Nov 2 17:32:42 2019 -0400
+
+    initial commit with accepting socket connections using lecture code
+
+commit e15173311c0d80e07ba70f923548a8b4790c6051
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sat Nov 2 17:27:35 2019 -0400
+
+    libcurl init
+
+commit 00e8c776767f3238233139e6610282a0fa3aec9b
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sat Nov 2 15:53:34 2019 -0400
+
+    initial framework
+
+commit d73ab9720512acc1536560c7694dc970e356cd7f
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sat Nov 2 15:16:16 2019 -0400
+
+    sync 1
+
+commit 32a6149c9e73038f185986d8126e3424bca6c46a
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sat Nov 2 14:50:59 2019 -0400
+
+    initial commit
+
+commit b80e80c1ab576533b1ea2fd1bb3848d95fdffea2
+Author: Devharsh Trivedi <devharsh@live.in>
+Date:   Sat Nov 2 14:32:55 2019 -0400
+
+    Create README.md
