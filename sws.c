@@ -2,24 +2,25 @@
 
 int
 main(int argc, char* argv[]) {	
-	/* int fd = 0;
-	int is_chdir;*/
 	int opt;
 	int port;
 	int daemonize;
-	/*int is_close = 1;*/ 
+	int logging_fd;
 
 	char *address = NULL;
 	
 	opt = 0;
 	port = 8080;
  	is_chdir = 1;
-	daemonize = false;
+	daemonize = true;
 	
 	server = malloc(sizeof(struct sockaddr));
 	server_info.server_name = "SWS_HTTP/1.0";
 	server_info.cgi_directory = "/cgi-bin"; 
 	server_info.connections = 5;
+	server_info.log_file = NULL;
+
+	(void) setprogname(argv[0]);
 
 	while ((opt = getopt(argc, argv,"c:dhi:l:p:")) != -1) {  
         	switch(opt) {
@@ -38,6 +39,7 @@ main(int argc, char* argv[]) {
 				address = optarg;
 				break;
 			case 'l':
+				server_info.log_file = optarg;
 				break;
 			case 'p':
 				port = atoi(optarg);
@@ -63,11 +65,21 @@ main(int argc, char* argv[]) {
 		return 1;
 	}
 
+	if (server_info.log_file != NULL) {
+		if ((logging_fd  = get_logging_file_descriptor(server_info.log_file)) < 0) {
+			return 1;
+		}
+		server_info.log_file_descriptor = logging_fd;
+	}
+
 	if (daemonize) {
 		if (daemon(0, 0) != 0) {
 			fprintf(stderr, "Could not daemonize process: %s\n", strerror(errno));
 			return 1;
 		}
+	} else {
+		server_info.log_file_descriptor = STDOUT_FILENO;
+		(void) close(logging_fd);
 	}
 
 	if (open_connection(server, server_info) != 0) {
@@ -108,4 +120,16 @@ validate_address(char *input_address, int port) {
 	}
 	
 	return NULL;
+}
+
+int
+get_logging_file_descriptor(char *path) {
+	int file_descriptor;
+
+	if ((file_descriptor = open(path, O_CREAT | O_WRONLY | O_APPEND)) < 0) {
+		fprintf(stderr, "Could not open file for logging: %s\n", strerror(errno));
+		return -1;
+	}
+
+	return file_descriptor;
 }

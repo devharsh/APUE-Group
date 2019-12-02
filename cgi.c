@@ -391,21 +391,3 @@ convert_int_to_string(int number, char *str) {
     }
     return 0;
 }
-
-unsigned int
-get_number_of_digits(int number) {
-    unsigned int count;
-    
-    if (number == 0) {
-        return 1;
-    }
-
-    count = 0;
-
-    while (number != 0) {
-        number = number / 10;
-        count++;
-    }
-
-    return count;
-}

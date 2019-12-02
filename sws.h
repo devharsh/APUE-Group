@@ -21,6 +21,7 @@ struct sockaddr *server;
 struct hostent *hp, *gethostbyname();
 struct sockaddr_in create_server_properties(char *address, int port);
 struct sockaddr* validate_address(char *input_address, int port);
+int	get_logging_file_descriptor(char *path);
 
 struct sws_flags {
 	int c;
