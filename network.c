@@ -291,8 +291,7 @@ process_request(struct request *req, struct response *res, struct server_informa
 		req->uri = final_path;
 
 		if (S_ISREG(sb->st_mode)) {
-			printf("regular file: %s\n", final_path);
-			fileCopy(res, info, final_path);
+			(void) fileCopy(res, info, final_path);
 		} else if (S_ISDIR(sb->st_mode)) {
 			(void) traverse_files(req, res, info);
 		} else {
@@ -559,7 +558,7 @@ parse_first_line(char *line, struct request *req) {
 						break;
 					case 1:
 						if (line_number == 1) {
-							uri = ptr;
+							uri = get_user_directroy_ifexists(ptr);
 						}
 						break;
 					case 2:
@@ -635,23 +634,29 @@ validate_date(char* date_str, struct request *req) {
 
 	/* wdy, DD mth YY HH:MM:SS GMT */
 	if (strptime(date, "%a, %d %b %Y %T %z", timeptr) != NULL) {
-			req->time = timeptr;
-			req->timestamp = mktime(timeptr);
-			valid = true;
+			if(validate_tm(timeptr)) {
+				req->time = timeptr;
+				req->timestamp = mktime(timeptr);
+				valid = true;
+			}
     } 
 	
 	/* wdy, DD-mth-YY HH:MM:SS GMT */
 	else if (strptime(date, "%a, %d-%b-%y %T %z", timeptr) != NULL) {
+		if(validate_tm(timeptr)) {
 			req->time = timeptr;
 			req->timestamp = mktime(timeptr);
 			valid = true;
+		}
 	}
 
 	/* wdy mth DD HH:MM:SS YY */
 	else if (strptime(date, "%a %b  %d %T %Y", timeptr) != NULL) {
+		if(validate_tm(timeptr)) {
 			req->time = timeptr;
 			req->timestamp = mktime(timeptr);
 			valid = true;
+		}
 	} else {
         valid = false;
     }
@@ -714,10 +719,114 @@ get_user_directroy_ifexists(char* uri) {
     (void) free(user);
     (void) free(uri_path);
 
-	printf("uri path is :: %s\n", r_uri);
 	return r_uri;
 }
 
 /*
 * TODO: add date validation
 */
+
+bool            
+validate_tm(struct tm *time_ptr) {
+
+	int year = 1900 + time_ptr->tm_year;
+
+	/* validating tm_mday - day of the month */
+	if (!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <=31))  {
+		return false;
+	}
+
+	/* validating tm_mday based on the month */
+	switch (time_ptr->tm_mon)
+	{
+		case 0:
+		case 2:
+		case 4:
+		case 6:
+		case 7:
+		case 9:
+		case 11:
+			if( !(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <=31))  {
+				return false;
+			}
+			break;
+		case 3:
+		case 5:
+		case 8:
+		case 10:
+			if (!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <=  30))  {
+				return false;
+			}
+			break;
+		case 1:
+				if (is_leap_year(year)) {
+					if(!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <= 29))  {
+						return false;
+					}
+				} else {
+					if (!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <= 28))  {
+						return false;
+					}
+				}
+			break;
+		default:
+			return false;
+			break;
+	}
+
+	return true;
+}
+
+/**
+ * Funtion to check for leap year returns boolean true if 'yes'
+ * or boolean false if 'no'
+ * */
+bool            
+is_leap_year(int year) {
+	if (year % 4 == 0) {
+        if ( year % 100 == 0) {
+            if ( year % 400 == 0)
+                return true;
+            else
+                return false;
+        }
+        else
+            return true;
+    }
+    else {
+        return false;
+	}
+}
+
+
+/**
+ * Function to generate HTML content
+ * */
+char* 
+generate_html(char* data) {
+    char *html;
+    char *r_html;
+
+    if((html = malloc(BUFFERSIZE)) == NULL) {
+        fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
+		exit(1);
+    }
+
+    if (sprintf(html, "\
+                        <html> \n\
+                            <body>\n\
+                                %s \n\
+                            </body>\n\
+                        </html>\n", data) < 0) {
+        fprintf(stderr, "read error %s\n", data);
+    }
+
+    if ((r_html = strdup(html)) == NULL) {
+        fprintf(stderr, "Out of memory.\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    (void) free(html);
+    
+    return r_html;
+}

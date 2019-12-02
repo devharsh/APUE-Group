@@ -28,7 +28,7 @@ cgi.o: cgi.c network.h
 	$(CC) $(CFLAGS) -c cgi.c
 
 debug:
-	$(CC) -o $(TARGET) $(TARGET).c helper.c network.c bbcp.c cgi.c
+	$(CC) -o $(TARGET) $(TARGET).c helper.c network.c bbcp.c cgi.c ls.c -lmagic
 
 clean:
 	$(RM) $(TARGET) *.o 
