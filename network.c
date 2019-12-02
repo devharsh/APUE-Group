@@ -388,11 +388,24 @@ write_response_to_socket(struct request *req, struct response *res) {
 
 void
 generate_error_response(struct response *res, struct server_information info, int status, char *error) {
+	char *error_content;
+
+	if((error_content = malloc(BUFFERSIZE)) == NULL) {
+        fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
+		exit(1);
+    }
+
+	if (sprintf(error_content, "<h1>%s</h1><p>%s</p>", get_status_code_value(status) , error) < 0) {
+		fprintf(stderr, "read error");
+	}
+
     res->status = status;
-    res->data = error;
+    res->data = generate_html(error_content);
     res->content_type = "text/html";
-    res->content_length = strlen(error);
+    res->content_length = strlen(res->data);
     res->server = info.server_name;
+	
+	(void) free(error_content);
 }
 
 char *
@@ -807,12 +820,7 @@ generate_html(char* data) {
 		exit(1);
     }
 
-    if (sprintf(html, "\
-                        <html> \n\
-                            <body>\n\
-                                %s \n\
-                            </body>\n\
-                        </html>\n", data) < 0) {
+    if (sprintf(html, "<html><body>%s</body></html>", data) < 0) {
         fprintf(stderr, "read error %s\n", data);
     }
 
