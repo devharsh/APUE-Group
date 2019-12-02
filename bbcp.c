@@ -1,7 +1,8 @@
-#include "bbcp.h"
+#include "network.h"
 
 int
 fileCopy(struct response* res, struct server_information server_info, char* source) {
+	char* bbcp_data = NULL;
 	int inputFD;
 	char filebuf[BUF_SIZE];
 	struct stat buf;
@@ -34,10 +35,10 @@ fileCopy(struct response* res, struct server_information server_info, char* sour
 	}
 
 	while ((number = read(inputFD, filebuf, BUF_SIZE)) > 0) {
-		if(data == NULL) {
-			data = filebuf;
+		if(bbcp_data == NULL) {
+			bbcp_data = filebuf;
 		} else {	
-			strncat(data, filebuf, BUF_SIZE);
+			strncat(bbcp_data, filebuf, BUF_SIZE);
 		}
 	}
 
@@ -53,11 +54,11 @@ fileCopy(struct response* res, struct server_information server_info, char* sour
 		return 1;
 	}
 
-	if (data != NULL) {
+	if (bbcp_data != NULL) {
 		res->status = 200;
-		res->content_length = strlen(data);
+		res->content_length = strlen(bbcp_data);
 		res->content_type = get_mime_type(source);
-		res->data = data;
+		res->data = bbcp_data;
 		res->server = server_info.server_name;
 	} else {
 		fprintf(stderr, "%s is not readable (access denied)\n", source);
