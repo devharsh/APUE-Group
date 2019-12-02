@@ -119,6 +119,9 @@ handle_child_request(struct server_information server_info) {
 		(req = malloc(sizeof(struct request))) == NULL ||
 		(res = malloc(sizeof(struct response))) == NULL) {
 		fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
+		generate_error_response(res, server_info, 500, "Internal Server Error");
+		req->method = "GET";
+		write_response_to_socket(req, res);
 		return 1;
 	}
 
@@ -126,6 +129,9 @@ handle_child_request(struct server_information server_info) {
 
 	if (signal(SIGALRM, read_alarm_signal_handler) == SIG_ERR) {
 		fprintf(stderr, "Could not register signal: %s \n", strerror(errno));
+		generate_error_response(res, server_info, 500, "Internal Server Error");
+		req->method = "GET";
+		write_response_to_socket(req, res);
 		return 1;
 	}
 
@@ -136,17 +142,20 @@ handle_child_request(struct server_information server_info) {
 	do {
 		bzero(read_buf, sizeof(read_buf));
 		if ((rval = read(msgsock, read_buf, BUFSIZ)) < 0) {
-			fprintf(stderr, "Could not read message from socket: %s\n", strerror(errno));
+			send_request_error(req, res, server_info, 500, "Internal Server Error");
+			write_response_to_socket(req, res);
 			return 1;
 		} else if (rval > 0) {
 			if (is_first_line) {
 				if ((line_dup = strdup(read_buf)) == NULL) {
 					fprintf(stderr, "Could not duplicate String: %s \n", strerror(errno));
+					send_request_error(req, res, server_info, 500, "Internal Server Error");
 					exit(1);
 				}
 
 				bool valid_first_line = parse_first_line(line_dup, req);
 				if (!valid_first_line) {
+					send_request_error(req, res, server_info, 400, "Invalid request");
 					(void) close(msgsock);
 					return 1;
 				} 
@@ -155,6 +164,7 @@ handle_child_request(struct server_information server_info) {
 				bool is_valid_header = validate_additional_information(read_buf, req);
 
 				if (!is_valid_header) {
+					send_request_error(req, res, server_info, 400, "Invalid request");
 					(void) close(msgsock);
 					return 1;
 				}
@@ -177,6 +187,14 @@ handle_child_request(struct server_information server_info) {
 	(void) close(msgsock);
 
 	return 0;
+}
+
+void
+send_request_error(struct request *req, struct response *res, 
+				   struct server_information server_info, int status, char *message) {
+	generate_error_response(res, server_info, status, message);
+	req->method = "GET";
+	write_response_to_socket(req, res);
 }
 
 int

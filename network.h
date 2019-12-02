@@ -104,3 +104,4 @@ int             process_request(struct request *req, struct response *res, struc
 int             check_general_errors(struct response *res, struct server_information info);
 char *          get_status_code_value(int status);
 void            handle_child_exec_process(__attribute__((unused)) int signal);
+void            send_request_error(struct request *req, struct response *res, struct server_information server_info, int status, char *message);
