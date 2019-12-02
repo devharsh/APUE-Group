@@ -53,11 +53,17 @@ fileCopy(struct response* res, struct server_information server_info, char* sour
 		return 1;
 	}
 
-	res->status = 200;
-	res->content_length = strlen(data);
-	res->content_type = get_mime_type(source);
-	res->data = data;
-	res->server = server_info.server_name;
+	if (data != NULL) {
+		res->status = 200;
+		res->content_length = strlen(data);
+		res->content_type = get_mime_type(source);
+		res->data = data;
+		res->server = server_info.server_name;
+	} else {
+		fprintf(stderr, "%s is not readable (access denied)\n", source);
+		generate_error_response(res, server_info, 500, "Internal Server Error");
+		return 1;
+	}
 
 	return 0;
 }
