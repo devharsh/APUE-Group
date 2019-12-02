@@ -1,3 +1,9 @@
+#include <sys/stat.h>
+
+#include <ctype.h>
+#include <fcntl.h>
+#include <paths.h>
+
 #include "sws.h"
 
 int
@@ -11,7 +17,6 @@ main(int argc, char* argv[]) {
 	
 	opt = 0;
 	port = 8080;
- 	is_chdir = 1;
 	daemonize = true;
 	
 	if ((server = malloc(sizeof(struct sockaddr))) == NULL) {
@@ -30,6 +35,7 @@ main(int argc, char* argv[]) {
         	switch(opt) {
 			case 'c':
 				server_info.cgi_directory = optarg;
+				(void) check_cgi_file(optarg);
 				break;
 			case 'd':
 				server_info.connections = 1;
@@ -123,6 +129,28 @@ validate_address(char *input_address, int port) {
 	}
 	
 	return NULL;
+}
+
+void
+check_cgi_file(char *path) {
+	struct stat *sb;
+
+	if ((sb = malloc(sizeof(struct stat))) == NULL) {
+		fprintf(stderr, "Unable to allocate memory: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	if (stat(path, sb) < 0) {
+		fprintf(stderr, "Unable to verify cgi-bin path: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	if (!(S_ISDIR(sb->st_mode))) {
+		fprintf(stderr, "Input file for cgi-bin is not a directory\n");
+		exit(1);
+	}
+
+	(void) free(sb);
 }
 
 int
