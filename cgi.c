@@ -11,7 +11,7 @@ cgi_request(struct request *req, struct response *res, struct server_information
     char *output_store, *error_store, *file_name, *dir_name, *executable;
     int content;
     char *environment[12]; 
-    char *arg[1];
+    char *arg[2];
 
     pid_t child;
 
@@ -59,8 +59,6 @@ cgi_request(struct request *req, struct response *res, struct server_information
             }
         }
 
-        arg[0] = '\0';
-
         dir_name = dirname(path);
         file_name = basename(path);
 
@@ -85,6 +83,9 @@ cgi_request(struct request *req, struct response *res, struct server_information
             fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
             exit(1);
         }
+
+        arg[0] = file_name;
+        arg[1] = '\0';
         
         (void) execvpe(executable, arg, environment);
         
@@ -387,26 +388,6 @@ generate_uri_information(char *uri) {
 
     (void) free(current_path);
     (void) free(sb);
-
-    return 0;
-}
-
-int
-append_char(char *string, char character) {
-    char *temp;
-    if ((temp = malloc(2)) == NULL) {
-         return 1;
-    }
-                
-    temp[0] = character;
-    temp[1] = '\0';
-
-    if (strcat(string, temp) == NULL) {
-        fprintf(stderr, "error: %s\n", strerror(errno));
-        return 1;
-    }
-
-    (void) free(temp);
 
     return 0;
 }

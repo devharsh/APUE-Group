@@ -446,6 +446,53 @@ write_response_to_socket(struct request *req, struct response *res) {
 	(void) free(content_length);
 }
 
+char *
+decode_url(char *encoded_url) {
+	char *decoded_url, *result;
+    char hex_value[2];
+    int  length, index;
+    char append_character;
+    
+    length = strlen(encoded_url);
+
+    if ((decoded_url = malloc(length + 1)) == NULL) {
+        fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+        return NULL;
+    }
+
+    decoded_url[0] = '\0'; 
+
+    for (index = 0; index < length; index++) {
+        append_character = encoded_url[index];
+        
+        if (encoded_url[index] == '%') {
+            if ((length - index) < 2) {
+                append_char(decoded_url, append_character);
+                continue;
+            }
+
+            hex_value[0] = encoded_url[index + 1];
+            hex_value[1] = encoded_url[index + 2];
+
+            if (isxdigit(hex_value[0]) && isxdigit(hex_value[1])) {
+                append_character = (char) strtol(hex_value, NULL, 16);
+                index += 2;
+            }
+        }
+
+        append_char(decoded_url, append_character);
+    }
+
+	if ((result = strdup(decoded_url)) == NULL) {
+		fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+        return NULL;
+	}
+    
+	(void) free(decoded_url);
+
+    return result;
+}
+
 void
 log_request(struct request *req, struct response *res, struct server_information info) {
 	int length, status_length, content_length;
@@ -456,7 +503,7 @@ log_request(struct request *req, struct response *res, struct server_information
 		status_length = get_number_of_digits(res->status);
 		content_length = get_number_of_digits(res->content_length);
 		length = strlen(info.client_address) + strlen(req->current_time) 
-				 + strlen(req->method) + strlen(req->uri) + strlen(req->protocol)
+				 + strlen(req->method) + strlen(req->raw_request) + strlen(req->protocol)
 				 + status_length + content_length + 9;
 		if ((log = malloc(length)) == NULL) {
 			fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
@@ -464,7 +511,7 @@ log_request(struct request *req, struct response *res, struct server_information
 		}
 
 		if (sprintf(log, "%s %s \"%s %s %s\" %i %i\n", info.client_address, req->current_time,
-					req->method, req->uri, req->protocol, res->status, res->content_length) < 0) {
+					req->method, req->raw_request, req->protocol, res->status, res->content_length) < 0) {
 			fprintf(stderr, "error: %s\n", strerror(errno));
 			exit(1);
 		}
@@ -636,7 +683,7 @@ is_request_complete(char *line, int *repeat_return) {
 bool
 parse_first_line(char *line, struct request *req) {
 	int  validate_req = 0, validate_protocol = 0, line_number = 0, n = 0;
-	char *ptr, *last, *method, *uri, *protocol, *line_pointer_dup;
+	char *ptr, *last, *method, *uri, *protocol, *line_pointer_dup, *decoded_url;
 	char *line_ptr = strtok_r(line, "\r\n", &last);
 	time_t current_time;
   	struct tm * current_time_struct;
@@ -668,6 +715,7 @@ parse_first_line(char *line, struct request *req) {
 						break;
 					case 1:
 						if (line_number == 1) {
+							req->raw_request = ptr;
 							uri = get_user_directroy_ifexists(ptr);
 						}
 						break;
@@ -694,7 +742,10 @@ parse_first_line(char *line, struct request *req) {
 		return false;
 	} else {
 		req->method = method;
-		req->uri = uri;
+
+		decoded_url = decode_url(uri);
+
+		req->uri = decoded_url;
 		req->protocol = protocol;
 
 		(void) time(&current_time);
@@ -963,4 +1014,24 @@ get_number_of_digits(int number) {
     }
 
     return count;
+}
+
+int
+append_char(char *string, char character) {
+    char *temp;
+    if ((temp = malloc(2)) == NULL) {
+         return 1;
+    }
+                
+    temp[0] = character;
+    temp[1] = '\0';
+
+    if (strcat(string, temp) == NULL) {
+        fprintf(stderr, "error: %s\n", strerror(errno));
+        return 1;
+    }
+
+    (void) free(temp);
+
+    return 0;
 }

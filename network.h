@@ -49,6 +49,7 @@ struct request {
     struct tm   *time;
     char        *current_time;
     time_t      timestamp;
+    char        *raw_request;
 };
 
 struct response {
@@ -112,3 +113,4 @@ void            send_request_error(struct request *req, struct response *res, st
 int		        fileCopy(struct response *res, struct server_information server_info, char* source);
 char *          get_remote_host_ip(struct sockaddr client);
 void            log_request(struct request *req, struct response *res, struct server_information info);
+char *          decode_url(char *encoded_url);
