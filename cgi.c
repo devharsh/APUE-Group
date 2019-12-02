@@ -261,6 +261,7 @@ get_env_string(char *key, char *value) {
         return NULL;
     }
 
+    free(buffer);
     return result;
 }
 
