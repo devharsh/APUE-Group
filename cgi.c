@@ -8,7 +8,7 @@ int
 cgi_request(struct request *req, struct response *res, struct server_information server_info) {
     int output[2], error[2];
     char *output_buffer, *error_buffer;
-    char *output_store, *error_store;
+    char *output_store, *error_store, *file_name, *dir_name, *executable;
     int content;
     char *environment[12]; 
     char *arg[1];
@@ -60,9 +60,35 @@ cgi_request(struct request *req, struct response *res, struct server_information
         }
 
         arg[0] = '\0';
+
+        dir_name = dirname(path);
+        file_name = basename(path);
+
+        if (chdir(dir_name) != 0) {
+            fprintf(stderr, "Could not change directory: %s\n", strerror(errno));
+            exit(1);
+        }
+
+        if ((executable = malloc(strlen(file_name) + 3)) == NULL) {
+            fprintf(stderr, "Could not allocate memory: %s\n", strerror(errno));
+            exit(1);
+        }
         
-        (void) execvpe(path, arg, environment);
+        executable[0] = '\0';
+
+        if (strcat(executable, "./") == NULL) {
+            fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
+            exit(1);
+        }
         
+        if (strcat(executable, file_name) == NULL) {
+            fprintf(stderr, "Something went wrong: %s\n", strerror(errno));
+            exit(1);
+        }
+        
+        (void) execvpe(executable, arg, environment);
+        
+        fprintf(stderr, "Something went wrong: %s %s\n", strerror(errno), executable);
         exit(1);
     } else {
         (void) close(output[1]);
@@ -83,14 +109,16 @@ cgi_request(struct request *req, struct response *res, struct server_information
                 generate_error_response(res, server_info, 500, "Internal Server Error");
                 return 1;
             }
+            (void) bzero(output_store, strlen(output_store));
         }
 
         while ((content = read(error[0], error_store, BUFFERSIZE)) > 0) {
-           if (strlcat(output_buffer, output_store, BUFFERSIZE) > BUFFERSIZE) {
+           if (strlcat(error_buffer, error_store, BUFFERSIZE) > BUFFERSIZE) {
                 fprintf(stderr, "Could not allocate space: %s \n", strerror(errno));
                 generate_error_response(res, server_info, 500, "Internal Server Error");
                 return 1;
            }
+           (void) bzero(error_store, strlen(error_store));
         }
 
         generate_response(res, server_info, output_buffer, error_buffer);
