@@ -59,6 +59,7 @@ fileCopy(struct response* res, struct server_information server_info, char* sour
 		res->content_length = strlen(bbcp_data);
 		res->content_type = get_mime_type(source);
 		res->data = bbcp_data;
+		res->date = ctime(&buf.st_mtime);
 		res->server = server_info.server_name;
 	} else {
 		fprintf(stderr, "%s is not readable (access denied)\n", source);
