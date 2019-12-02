@@ -792,3 +792,36 @@ is_leap_year(int year) {
         return false;
 	}
 }
+
+
+/**
+ * Function to generate HTML content
+ * */
+char* 
+generate_html(char* data) {
+    char *html;
+    char *r_html;
+
+    if((html = malloc(BUFFERSIZE)) == NULL) {
+        fprintf(stderr, "Could not allocate memory: %s \n", strerror(errno));
+		exit(1);
+    }
+
+    if (sprintf(html, "\
+                        <html> \n\
+                            <body>\n\
+                                %s \n\
+                            </body>\n\
+                        </html>\n", data) < 0) {
+        fprintf(stderr, "read error %s\n", data);
+    }
+
+    if ((r_html = strdup(html)) == NULL) {
+        fprintf(stderr, "Out of memory.\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    (void) free(html);
+    
+    return r_html;
+}
