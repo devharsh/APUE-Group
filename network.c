@@ -1,12 +1,10 @@
 #include "network.h"
 
 void
-read_alarm_signal_handler(int signal) {
-	if (signal == SIGALRM) {
-		fprintf(stderr, "Read timeout for connection");
-		(void) close(msgsock);
-		exit(1);
-	}
+read_alarm_signal_handler(__attribute__((unused)) int signal) {
+	fprintf(stderr, "Connection Timed out");
+	(void) close(msgsock);
+	exit(1);
 }
 
 void
@@ -166,11 +164,10 @@ handle_child_request(struct server_information server_info) {
 		}
 	} while (!is_request_complete(read_buf, repeat_return));
 	
-	(void) alarm(0);
-	
 	process_request(req, res, server_info);
 	write_response_to_socket(req, res);
 
+	(void) alarm(0);
 	(void) free(raw_request);
 	(void) free(req);
 	(void) close(msgsock);
