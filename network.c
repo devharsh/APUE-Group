@@ -226,7 +226,9 @@ handle_child_request(struct server_information server_info) {
 
 	(void) alarm(0);
 
-	(void) log_request(req, res, server_info);
+	if (server_info.log_file != NULL) {
+		(void) log_request(req, res, server_info);
+	}
 
 	(void) free(raw_request);
 	(void) free(req);

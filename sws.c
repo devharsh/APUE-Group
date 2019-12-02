@@ -69,7 +69,6 @@ main(int argc, char* argv[]) {
 		if ((logging_fd  = get_logging_file_descriptor(server_info.log_file)) < 0) {
 			return 1;
 		}
-
 		server_info.log_file_descriptor = logging_fd;
 	}
 
