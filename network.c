@@ -727,7 +727,7 @@ validate_tm(struct tm *time_ptr) {
 	int year = 1900 + time_ptr->tm_year;
 
 	/* validating tm_mday - day of the month */
-	if(!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <=31))  {
+	if (!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <=31))  {
 		return false;
 	}
 
@@ -741,7 +741,7 @@ validate_tm(struct tm *time_ptr) {
 		case 7:
 		case 9:
 		case 11:
-			if(!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <=31))  {
+			if( !(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <=31))  {
 				return false;
 			}
 			break;
@@ -749,17 +749,17 @@ validate_tm(struct tm *time_ptr) {
 		case 5:
 		case 8:
 		case 10:
-			if(!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <=  30))  {
+			if (!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <=  30))  {
 				return false;
 			}
 			break;
 		case 1:
-				if(is_leap_year(year)) {
+				if (is_leap_year(year)) {
 					if(!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <= 29))  {
 						return false;
 					}
 				} else {
-					if(!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <= 28))  {
+					if (!(time_ptr->tm_mday >= 1 && time_ptr->tm_mday <= 28))  {
 						return false;
 					}
 				}
@@ -778,10 +778,9 @@ validate_tm(struct tm *time_ptr) {
  * */
 bool            
 is_leap_year(int year) {
-	if(year%4 == 0) {
-        if( year%100 == 0) 
-		{
-            if ( year%400 == 0)
+	if (year % 4 == 0) {
+        if ( year % 100 == 0) {
+            if ( year % 400 == 0)
                 return true;
             else
                 return false;

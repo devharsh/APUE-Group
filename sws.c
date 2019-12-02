@@ -74,8 +74,8 @@ main(int argc, char* argv[]) {
 		return 1;
 	}
 
-	free(server);
-	fclose(fp);
+	(void) free(server);
+	(void) fclose(fp);
 
 	return 0;
 }
