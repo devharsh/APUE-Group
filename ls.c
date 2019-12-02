@@ -106,9 +106,12 @@ traverse_files(struct request *req, struct response *res, struct server_informat
     }
 
     if(index_file_found) {
-        /* TODO: handle code for  index.html */
         index_path = req->uri;
-        strcat(index_path, "/index.html");
+        if(strcat(index_path, "/index.html") == NULL) {
+            fprintf(stderr, "strcat error\n");
+            generate_error_response(res, info, 500, "Internal Server Error");
+            return 1;
+        }
         (void) fileCopy(res, info, index_path);
     } else  {
         if(err_flag) {
