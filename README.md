@@ -16,4 +16,4 @@ Devharsh Trivedi (dtrived5)
 
 ## Issues
 
-- using -Wno-format-y2k compiler flag to suppress "warning: '%c' yields only last 2 digits of year in some locales" in sprintf()
+-   using -Wno-format-y2k compiler flag to suppress "warning: '%c' yields only last 2 digits of year in some locales" in sprintf()

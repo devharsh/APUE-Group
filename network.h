@@ -7,8 +7,16 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 
+#include <ctype.h>
+#include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <fts.h>
+#include <libgen.h>
+#include <limits.h>
 #include <netdb.h>
+#include <paths.h>
+#include <pwd.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -16,14 +24,6 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include <dirent.h>
-#include <fts.h>
-#include <limits.h>
-#include <pwd.h>
-#include <ctype.h>
-#include <fcntl.h>
-#include <paths.h>
-#include <libgen.h>
 
 #define TRUE 1
 #define BUFFERSIZE 1048576
@@ -118,8 +118,6 @@ int             cgi_request(struct request *req, struct response *res, struct se
 void            write_response_to_socket(struct request *req, struct response *res);
 void            write_to_socket(char *key, const char *value);
 char*           get_user_directroy_ifexists(char* uri);
-int             fileCopy(struct response *res, struct server_information info, char* source, char* destination);
-int             htmlResponse(char* str_html);
 bool            is_leap_year(int year);
 int             process_request(struct request *req, struct response *res, struct server_information info);
 int             check_general_errors(struct response *res, struct server_information info);
